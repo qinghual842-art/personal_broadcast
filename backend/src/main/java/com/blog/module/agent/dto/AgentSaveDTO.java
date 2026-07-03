@@ -15,7 +15,6 @@ public class AgentSaveDTO {
     private String capabilityDesc;
     @NotBlank(message = "大模型提供商不能为空")
     private String provider;
-    @NotBlank(message = "API密钥不能为空")
     private String apiKey;
     private String modelName;
     private BigDecimal temperature;

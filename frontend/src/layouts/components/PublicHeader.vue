@@ -145,7 +145,7 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
 
 <style scoped>
 .public-header {
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--bg-header-glass);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-bottom: none;

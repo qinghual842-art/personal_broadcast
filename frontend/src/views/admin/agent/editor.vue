@@ -86,13 +86,16 @@ async function handleSave() {
     if (isEdit.value) {
       await updateAgent(route.params.id, form.value)
       ElMessage.success('更新成功')
+      router.push('/admin/agents')
     } else {
       await createAgent(form.value)
       ElMessage.success('创建成功')
       router.push('/admin/agents')
     }
   } catch (e) {
-    // error already shown by axios interceptor
+    if (e.response?.data?.message) {
+      ElMessage.error(e.response.data.message)
+    }
   } finally {
     saving.value = false
   }

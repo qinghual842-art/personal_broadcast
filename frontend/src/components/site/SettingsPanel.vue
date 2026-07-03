@@ -39,26 +39,7 @@ function applyTheme() {
   }
 }
 
-// ─── Background presets (light only) ──────────────────
-const BG_KEY = 'blog_bg_color'
-const bgPresets = [
-  { label: '青白', color: '#f2f6f9' },
-  { label: '纯白', color: '#ffffff' },
-  { label: '浅蓝', color: '#e8f4fd' },
-  { label: '浅灰', color: '#f5f5f5' },
-  { label: '暖黄', color: '#fdf6ec' },
-  { label: '浅绿', color: '#eef7ee' },
-  { label: '浅紫', color: '#f5f0fa' },
-]
-const currentBg = ref(localStorage.getItem(BG_KEY) || '#f2f6f9')
-
-function setBg(color) {
-  currentBg.value = color
-  localStorage.setItem(BG_KEY, color)
-  document.documentElement.style.setProperty('--bg-page-override', color)
-}
-
-// ─── Ctrl + Scroll zoom ──────────────────────────────
+// ── Ctrl + Scroll zoom ──────────────────────────────
 function onWheel(e) {
   if (e.ctrlKey) {
     e.preventDefault()
@@ -91,7 +72,6 @@ function goLogin() {
 onMounted(() => {
   setFontSize(fontScale.value)
   applyTheme()
-  setBg(currentBg.value)
   window.addEventListener('wheel', onWheel, { passive: false })
 })
 onUnmounted(() => window.removeEventListener('wheel', onWheel))
@@ -127,19 +107,6 @@ onUnmounted(() => window.removeEventListener('wheel', onWheel))
       <div class="theme-toggle">
         <button class="theme-btn" :class="{ active: currentTheme === 'light' }" @click="setTheme('light')">☀ 亮色</button>
         <button class="theme-btn" :class="{ active: currentTheme === 'dark' }" @click="setTheme('dark')">🌙 深色</button>
-      </div>
-    </div>
-
-    <!-- 背景底色（仅亮色模式可用） -->
-    <div class="panel-section" v-if="currentTheme === 'light'">
-      <div class="section-label">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="2"/></svg>
-        界面背景色
-      </div>
-      <div class="color-grid">
-        <button v-for="bg in bgPresets" :key="bg.color" class="color-swatch" :class="{ active: currentBg === bg.color }" :style="{ background: bg.color }" :title="bg.label" @click="setBg(bg.color)">
-          <svg v-if="currentBg === bg.color" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
       </div>
     </div>
 
@@ -209,14 +176,6 @@ onUnmounted(() => window.removeEventListener('wheel', onWheel))
 .theme-btn:hover { border-color: var(--color-primary-300); }
 .theme-btn.active { background: var(--color-primary-500); border-color: var(--color-primary-500); color: #fff; }
 
-.color-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.color-swatch {
-  aspect-ratio: 1; border-radius: 8px; border: 2px solid transparent; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; transition: all .15s;
-}
-.color-swatch:hover { transform: scale(1.1); }
-.color-swatch.active { border-color: var(--color-primary-500); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25); }
-
 .account-list { display: flex; flex-direction: column; gap: var(--space-3); }
 .account-row { display: flex; justify-content: space-between; align-items: center; font-size: var(--text-sm); color: var(--text-tertiary); }
 .account-btns { display: flex; gap: 4px; }
@@ -232,5 +191,5 @@ onUnmounted(() => window.removeEventListener('wheel', onWheel))
 :deep(.el-slider) { height: 28px; }
 :deep(.el-slider__runway) { height: 5px; border-radius: 3px; background: var(--bg-subtle); }
 :deep(.el-slider__bar) { height: 5px; background: var(--color-primary-500); border-radius: 3px; }
-:deep(.el-slider__button) { width: 16px; height: 16px; border: 2px solid var(--color-primary-500); background: #fff; }
+:deep(.el-slider__button) { width: 16px; height: 16px; border: 2px solid var(--color-primary-500); background: var(--bg-surface); }
 </style>

@@ -62,6 +62,7 @@
   --bg-subtle:        #eae5dd;
   --bg-accent-light:  #f0ece6;
   --bg-warm:          #faf6f0;
+  --bg-header-glass:   rgba(255, 255, 255, 0.85);
 
   /* 文字色系 */
   --text-primary:    #1c1a17;
@@ -830,6 +831,7 @@ img {
   --bg-subtle:        #1f1e25;
   --bg-accent-light:  #23222a;
   --bg-warm:          #1a191f;
+  --bg-header-glass:   rgba(30, 29, 35, 0.9);
 
   --text-primary:    #e8e5df;
   --text-secondary:  #c9c3b8;
@@ -848,6 +850,9 @@ img {
   --shadow-xl:   0 24px 64px rgba(0,0,0,.6);
   --shadow-card: 0 4px 16px rgba(0,0,0,.3);
   --shadow-glow: 0 0 40px rgba(212, 168, 83, 0.05);
+
+  --gradient-warm: linear-gradient(180deg, #1a191f, #1e1d23);
+  --color-amber-50: #1e1c18;
 
   --color-primary-500: #788ebd;
   --color-primary-600: #9faed0;
@@ -876,6 +881,14 @@ img {
   .el-pagination {
     --el-pagination-bg-color: #1e1d23;
     --el-pagination-button-disabled-bg-color: #27252d;
+  }
+
+  .el-loading-mask {
+    background: rgba(17, 16, 20, 0.75);
+  }
+
+  .shimmer-sweep::after {
+    background: linear-gradient(110deg, transparent 40%, rgba(232, 229, 223, 0.08) 50%, transparent 60%);
   }
 
   ::selection {

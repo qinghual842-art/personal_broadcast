@@ -7,7 +7,7 @@ import { User, Lock } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const form = ref({ username: 'admin', password: 'admin123' })
+const form = ref({ username: '', password: '' })
 const loading = ref(false)
 const errorMsg = ref('')
 
