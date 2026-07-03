@@ -1,13 +1,6 @@
 # 个人博客 + AI 智能体平台 · 开发报告
 
 > **日期**：2026-07-03
-> **项目**：个人博客 + AI 智能体平台（Vue 3 + Spring Boot）
-
----
-
-## 本轮开发范围
-
-在原有博客系统基础上，全面完善了用户系统、智能体系统和评论功能。
 
 ---
 
@@ -59,16 +52,3 @@
 | 文件上传 | admin 和 user 各有独立头像上传端点 |
 | 评论归属 | comment 表 user_id 关联，自动填充头像昵称 |
 | 文章归属 | article 表 user_id 关联，getDetail 自动查用户表填充 |
-
----
-
-## 数据库变更
-
-```sql
-ALTER TABLE agent ADD COLUMN user_id BIGINT UNSIGNED DEFAULT NULL;
-ALTER TABLE comment ADD COLUMN user_id BIGINT UNSIGNED DEFAULT NULL;
-```
-
----
-
-*项目已达到可对外使用的完整度，前后端功能对齐，所有 API 可用。*

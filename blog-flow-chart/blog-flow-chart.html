@@ -174,7 +174,7 @@
 <!-- ==================== Slide 6: 前台功能流程 ==================== -->
 <section class="slide" data-title="前台功能流程">
   <p class="kicker">Frontend Flow · 前台用户功能</p>
-  <h2 class="h2">七大核心功能模块</h2>
+  <h2 class="h2">九大核心功能模块</h2>
   <div class="cgrid anim-stagger-list" data-anim-target>
     <div class="ccard hl">
       <div class="cc-ic">🏠</div>
@@ -184,7 +184,7 @@
     <div class="ccard hl">
       <div class="cc-ic">📄</div>
       <h4>文章浏览</h4>
-      <p>Markdown 渲染正文 → 自动统计阅读量 → 展示分类标签 → 上一篇/下一篇切换 → 文章内嵌智能体入口 → 文章点赞（登录用户）→ 点赞数统计</p>
+      <p>Markdown 渲染正文 → 自动统计阅读量 → 展示分类标签 → 上一篇/下一篇切换 → 文章内嵌智能体入口 → 文章点赞（登录用户）→ 点赞数统计 → 置顶文章优先展示</p>
     </div>
     <div class="ccard">
       <div class="cc-ic">🔍</div>
@@ -194,7 +194,7 @@
     <div class="ccard">
       <div class="cc-ic">💬</div>
       <h4>评论互动</h4>
-      <p>游客匿名/留名评论 → 登录用户可发表评论（关联用户身份）→ 按时间排序展示 → 后台审核/删除违规评论</p>
+      <p>游客匿名/留名评论 → 登录用户可发表评论（关联用户身份）→ 支持嵌套回复 → 按时间排序展示 → 后台审核/删除（支持批量）</p>
     </div>
     <div class="ccard">
       <div class="cc-ic">👨‍💻</div>
@@ -209,7 +209,17 @@
     <div class="ccard hl">
       <div class="cc-ic">👍</div>
       <h4>用户认证</h4>
-      <p>注册/登录 → 个人资料编辑 → 密码修改 → 登录状态管理</p>
+      <p>注册/登录 → 个人资料页（头像上传/昵称/邮箱） → 密码修改 → 登录状态管理</p>
+    </div>
+    <div class="ccard hl">
+      <div class="cc-ic">✍️</div>
+      <h4>用户投稿</h4>
+      <p>普通用户可撰写文章（Markdown 编辑器）→ 提交投稿 → 管理我的文章列表 → 编辑/删除自己的文章</p>
+    </div>
+    <div class="ccard hl">
+      <div class="cc-ic">🤖</div>
+      <h4>用户智能体</h4>
+      <p>普通用户可创建自定义 AI 智能体 → 配置模型/密钥/参数 → 管理个人智能体列表 → 独立于系统智能体</p>
     </div>
   </div>
   <div class="deck-footer"><span class="dim2">个人博客 + AI 智能体</span><span class="slide-number" data-current="6" data-total="10"></span></div>
@@ -269,9 +279,14 @@
   <!-- 功能模块 -->
   <div class="cgrid anim-stagger-list" data-anim-target>
     <div class="ccard hl">
+      <div class="cc-ic">📊</div>
+      <h4>仪表盘</h4>
+      <p>站点概览（文章总数/评论总数/智能体数量/管理员状态）→ 快捷操作入口（写文章/管理分类/标签/站点设置）</p>
+    </div>
+    <div class="ccard hl">
       <div class="cc-ic">📝</div>
       <h4>文章管理</h4>
-      <p>新增（Markdown编辑）→ 编辑 → 删除（单篇/批量）→ 状态控制（草稿/已发布）</p>
+      <p>新增（Markdown编辑）→ 编辑 → 删除（单篇/批量）→ 状态控制（草稿/已发布）→ 置顶控制</p>
     </div>
     <div class="ccard">
       <div class="cc-ic">📂</div>
@@ -281,15 +296,15 @@
     <div class="ccard">
       <div class="cc-ic">🏷️</div>
       <h4>标签管理</h4>
-      <p>新增标签 → 删除 → 多对多关联（一文多标签，一标签多文）</p>
+      <p>新增标签 → 编辑 → 删除 → 多对多关联（一文多标签，一标签多文）</p>
     </div>
     <div class="ccard">
       <div class="cc-ic">💬</div>
       <h4>评论管理</h4>
-      <p>查看全部评论 → 审核评论（可选）→ 删除违规评论</p>
+      <p>查看全部评论 → 审核评论（通过/拒绝）→ 删除违规评论 → 支持批量删除</p>
     </div>
     <div class="ccard">
-      <div class="cc-ic">👤</div>
+      <div class="cc-ic">⚙️</div>
       <h4>站点设置</h4>
       <p>修改头像/昵称/简介 → 站点名称/网站简介/版权信息 → 修改登录密码</p>
     </div>
@@ -333,9 +348,9 @@
 <!-- ==================== Slide 12: AI 对话交互流程 ==================== -->
 <section class="slide" data-title="AI对话流程">
   <p class="kicker">AI Chat Flow · 智能体对话交互</p>
-  <h2 class="h2">游客与 AI 智能体的完整对话链路</h2>
+  <h2 class="h2">用户与 AI 智能体的完整对话链路（支持系统智能体 + 用户自定义智能体）</h2>
   <div class="flow anim-stagger-list" data-anim-target style="margin-bottom:20px">
-    <div class="node"><div class="ic">👤</div><h4>游客输入</h4><p>文本提问</p></div>
+    <div class="node"><div class="ic">👤</div><h4>用户输入</h4><p>文本提问</p></div>
     <div class="arr">→</div>
     <div class="node hl"><div class="ic">🛡️</div><h4>安全检测</h4><p>敏感词过滤 + 频率限制</p></div>
     <div class="arr">→</div>
@@ -415,6 +430,8 @@
       <div class="ai-item">🤖 AI 智能体配置（AES 加密）</div>
       <div class="ai-item">👤 普通用户信息（注册/登录）</div>
       <div class="ai-item">👍 文章点赞记录</div>
+      <div class="ai-item">✍️ 用户投稿文章（user_id 关联）</div>
+      <div class="ai-item">🤖 用户自定义智能体（user_id 关联）</div>
     </div>
     <div class="ai-col">
       <h4>⚡ Redis 缓存层</h4>
@@ -473,11 +490,11 @@
     <div class="n" style="top:5px;left:calc(50% - 60px)">数据存储</div>
     <div class="n" style="top:440px;left:calc(50% - 60px)">外部服务</div>
     <!-- 二级子节点 -->
-    <div class="n sm" style="top:10px;left:10px">首页 / 文章 / 点赞</div>
-    <div class="n sm" style="top:120px;left:10px">搜索 / 评论 / 用户认证</div>
-    <div class="n sm" style="top:320px;left:10px">文章 / 分类</div>
-    <div class="n sm" style="top:440px;left:10px">标签 / 站点</div>
-    <div class="n sm" style="top:10px;right:10px">对话 / 配置</div>
+    <div class="n sm" style="top:10px;left:10px">首页 / 文章 / 点赞 / 投稿</div>
+    <div class="n sm" style="top:120px;left:10px">搜索 / 评论 / 认证 / 归档</div>
+    <div class="n sm" style="top:320px;left:10px">仪表盘 / 文章 / 分类</div>
+    <div class="n sm" style="top:440px;left:10px">标签 / 评论 / 站点</div>
+    <div class="n sm" style="top:10px;right:10px">对话 / 配置 / 用户创建</div>
     <div class="n sm" style="top:120px;right:10px">模型 / 参数</div>
     <div class="n sm" style="top:320px;right:10px">权限 / 加密</div>
     <div class="n sm" style="top:440px;right:10px">限流 / 过滤</div>
