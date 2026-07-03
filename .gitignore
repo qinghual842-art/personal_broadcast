@@ -32,3 +32,17 @@ uploads/
 
 # Frontend env files
 frontend/.env.*
+
+# Temp
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Coverage
+coverage/
+
+# Package lock (optional - uncomment if needed)
+# package-lock.json
+# pnpm-lock.yaml
