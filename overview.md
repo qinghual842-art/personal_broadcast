@@ -1,69 +1,74 @@
-# 全栈项目完整性审查 · 完成报告
+# 个人博客 + AI 智能体平台 · 开发报告
 
-> **审查人**：Senior Developer（高级开发工程师）  
-> **日期**：2026-06-05  
+> **日期**：2026-07-03
 > **项目**：个人博客 + AI 智能体平台（Vue 3 + Spring Boot）
 
 ---
 
-## 审查范围
+## 本轮开发范围
 
-本次审查覆盖了全栈项目的 **前端 API 层、状态管理、路由、入口配置、HTTP 层、后端 Service 层** 六大维度，共发现并修复 **10+ 个问题**。后续 UI 已全面升级为 **Midnight Ink（墨夜书房）** 设计系统。
-
----
-
-## 发现与修复汇总
-
-### 🔴 严重问题（已修复）
-
-| # | 问题 | 文件 | 修复 |
-|---|------|------|------|
-| 1 | **HTTP 401 拦截器存储不一致**：HTTP 错误拦截器使用 `localStorage` 清除 token，但 Auth Store 实际使用 `sessionStorage`，导致旧 token 残留 | `api/request.js` | 统一为 `sessionStorage` + 同步清除 Pinia store 状态 |
-| 2 | **拦截器绕过 authStore**：拦截器直接操作 `sessionStorage` 而非调用 `authStore.logout()`，导致 Pinia 响应式状态未同步 | `api/request.js` | 改用动态 import 同步清除 `authStore.token` / `authStore.admin` |
-
-### 🟡 中等问题（已修复）
-
-| # | 问题 | 文件 | 修复 |
-|---|------|------|------|
-| 3 | **JSON.parse 无保护**：`auth.js` 读取 sessionStorage 时如果数据损坏会导致应用崩溃 | `stores/auth.js` | 添加 `safeParseJSON` helper 包裹 try-catch |
-| 4 | **全局注册 300+ 图标**：`main.js` 中 `for...in` 循环注册了所有 Element Plus Icons | `main.js` | 改为仅注册实际使用的 14 个图标 |
-| 5 | **Google Fonts CDN**：Inter 字体从 Google CDN 加载，中国大陆无法访问 | `App.vue` | 移除 Google Fonts `@import`，增强系统字体回退栈 |
-| 6 | **CommentManageView 缺少批量删除**：`batchDeleteComments` API 存在但 UI 未连接 | `CommentManageView.vue` | 添加表格多选 + 批量删除工具栏 |
-| 7 | **ArticleServiceImpl 缓存清除遗漏**：重构后 `evictArticleCache` 调用丢失 | `ArticleServiceImpl.java` | 恢复所有写操作后的缓存清除调用 |
-
-### 🟢 轻微改进（已修复）
-
-| # | 问题 | 文件 | 修复 |
-|---|------|------|------|
-| 8 | **路由切换无过渡动画** | `App.vue` | 添加 `page-fade` transition |
-| 9 | **缺少应用级错误处理器** | `main.js` | 添加 `app.config.errorHandler` |
-| 10 | **HTTP 响应拦截器缺少状态码分类** | `api/request.js` | 添加 403/404/500 差异化处理 |
+在原有博客系统基础上，全面完善了用户系统、智能体系统和评论功能。
 
 ---
 
-## 质量度量
+## 新增功能
 
-| 维度 | 审查前 | 审查后 |
-|------|--------|--------|
-| API 函数使用率 | 97.9%（46/47） | **100%**（47/47） |
-| HTTP 拦截器存储一致性 | 不一致 | 统一 |
-| 图标注册数量 | 300+ (全量) | 14 (按需) |
-| 路由过渡动画 | 无 | 有（淡入淡出） |
-| 全局错误处理 | 无 | 有 |
-| 缓存清除覆盖率 | 0% | 100%（5 个写操作全部覆盖） |
+### 用户系统
+- 用户注册/登录，注册时可选上传头像（默认头像兜底）
+- 用户个人资料页：头像上传、昵称/邮箱/简介编辑、修改密码
+- 用户文章创作：写文章（Markdown 编辑）、我的文章列表管理
+- 文章详情页展示作者头像和昵称
+
+### 智能体系统
+- **双轨制**：系统默认智能体（管理员创建，所有用户可见）+ 用户自建智能体
+- 管理员后台创建系统默认智能体，配置厂商/模型/密钥/性格
+- 用户可自建智能体，选择厂商、填入 API 密钥、选择模型
+- 首页侧边栏智能体选择器，可切换不同智能体对话
+- 不同用户的聊天记录完全隔离（sessionStorage + userId）
+- 未登录时智能助手提示登录后才能使用
+- 模型名称推荐：根据所选厂商自动显示推荐模型列表
+- 豆包特殊提示：需在火山方舟控制台创建推理端点
+- AI API 错误信息详细化：返回 HTTP 状态码 + API 响应体
+
+### 评论系统
+- 必须登录后才能评论
+- 自动显示用户头像和昵称，无需手动填写
+- 文章作者评论时显示「作者」金色徽章
+- 评论请求 token 优先级修复：用户端点优先使用 user_token
+
+### 博主信息展示
+- 博主头像/昵称从后端 API 获取，不再依赖 sessionStorage
+- 首页 Hero Banner + 侧边栏均实时获取最新博主信息
+- 后台管理员修改头像后所有用户可见
+
+### UI/UX 优化
+- "关于我"全面改为"博客声明"，默认声明："此博客服务于每一个热爱交流的技术选手"
+- 豆包模型推荐修正为实际模型名
+- 请求拦截器 token 优先级：/admin/ 路由用 admin token，其他用 user token
 
 ---
 
-## 未修改的代码
+## 技术要点
 
-- ✅ 前端所有 `<script setup>` 功能逻辑
-- ✅ 前端路由配置（23 条路由 + 守卫）
-- ✅ Pinia Store 核心流程
-- ✅ 后端所有 Controller
-- ✅ 后端所有 Mapper
-- ✅ API 接口契约
-- ✅ 数据库结构
+| 维度 | 实现 |
+|------|------|
+| 用户认证 | JWT 双端（admin + user），Redis 存储 token |
+| API 密钥加密 | AES-GCM 加密存储大模型密钥 |
+| 聊天隔离 | sessionStorage key 包含 userId |
+| 智能体归属 | agent 表 user_id 列区分系统/用户 |
+| 文件上传 | admin 和 user 各有独立头像上传端点 |
+| 评论归属 | comment 表 user_id 关联，自动填充头像昵称 |
+| 文章归属 | article 表 user_id 关联，getDetail 自动查用户表填充 |
 
 ---
 
-*全栈项目现已达到生产级代码质量标准。前后端 API 100% 对齐，所有功能完整可用。*
+## 数据库变更
+
+```sql
+ALTER TABLE agent ADD COLUMN user_id BIGINT UNSIGNED DEFAULT NULL;
+ALTER TABLE comment ADD COLUMN user_id BIGINT UNSIGNED DEFAULT NULL;
+```
+
+---
+
+*项目已达到可对外使用的完整度，前后端功能对齐，所有 API 可用。*
