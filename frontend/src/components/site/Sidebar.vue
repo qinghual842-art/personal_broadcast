@@ -109,25 +109,6 @@ function goTag(id) {
         >{{ tag.name }}</span>
       </div>
     </div>
-
-    <!-- AI Assistant Entry -->
-    <div class="widget ai-widget" @click="router.push('/agents')">
-      <div class="ai-inner">
-        <div class="ai-icon-wrap">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="ai-spark">
-            <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3"/>
-            <path d="M12 2v4M12 18v4M2 12h4M18 12h4M5.64 5.64l2.83 2.83M15.54 15.54l2.83 2.83M5.64 18.36l2.83-2.83M15.54 8.46l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="ai-text">
-          <span class="ai-title">AI 智能助手</span>
-          <span class="ai-desc">与智能体对话，探索无限可能</span>
-        </div>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="ai-arrow">
-          <path d="M8 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-    </div>
   </aside>
 </template>
 
@@ -367,71 +348,6 @@ function goTag(id) {
     border-color: rgba(212, 168, 83, 0.25);
     transform: translateY(-1px);
   }
-}
-
-/* ═══ AI Widget ═══ */
-.ai-widget {
-  cursor: pointer;
-  background: linear-gradient(135deg, rgba(212, 168, 83, 0.08), var(--bg-surface));
-  border-color: rgba(212, 168, 83, 0.18);
-  padding: var(--space-5) var(--space-6);
-  position: relative;
-  overflow: hidden;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 100% 0%, rgba(212, 168, 83, 0.06) 0%, transparent 60%);
-    pointer-events: none;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    border-color: rgba(212, 168, 83, 0.35);
-  }
-}
-
-.ai-inner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  position: relative;
-  z-index: 1;
-}
-
-.ai-icon-wrap {
-  flex-shrink: 0;
-  color: var(--color-amber-500);
-}
-
-.ai-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.ai-title {
-  display: block;
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
-
-.ai-desc {
-  font-size: 12px;
-  color: var(--text-tertiary);
-}
-
-.ai-arrow {
-  flex-shrink: 0;
-  color: var(--color-amber-500);
-  transition: transform var(--transition-fast);
-}
-
-.ai-widget:hover .ai-arrow {
-  transform: translateX(3px);
 }
 
 /* ═══ Responsive ═══ */

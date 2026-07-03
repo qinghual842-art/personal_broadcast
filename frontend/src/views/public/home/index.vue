@@ -1,13 +1,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { getArticles } from '@/api/article'
 import { getCategories } from '@/api/category'
 import { getTags } from '@/api/tag'
 import ArticleCard from '@/components/article/ArticleCard.vue'
 import Sidebar from '@/components/site/Sidebar.vue'
+import ChatPanel from '@/components/site/ChatPanel.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import { useAuthStore } from '@/stores/auth'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const articles = ref([])
 const total = ref(0)
@@ -44,38 +47,44 @@ onMounted(() => {
 
 <template>
   <div class="home-page">
+    <Sidebar />
+
     <div class="home-main">
       <!-- Hero Banner -->
       <section class="hero-banner">
         <div class="hero-bg-pattern"></div>
         <div class="hero-body">
-          <div class="hero-avatar-wrap">
-            <div class="avatar-ring"></div>
-            <el-avatar
-              :size="80"
-              :src="authStore.admin?.avatar"
-              icon="UserFilled"
-              class="hero-avatar"
-            />
+          <div class="hero-left">
+            <div class="hero-avatar-wrap">
+              <div class="avatar-ring"></div>
+              <el-avatar
+                :size="72"
+                :src="authStore.admin?.avatar"
+                icon="UserFilled"
+                class="hero-avatar"
+              />
+            </div>
           </div>
-          <div class="hero-text">
+          <div class="hero-center">
             <h1 class="hero-name">{{ authStore.admin?.nickname || '博主' }}</h1>
             <p class="hero-signature">
               在代码与文字之间，记录思考的轨迹。这里是我的数字花园，每一篇文章都是一次安静的对话。
             </p>
           </div>
-          <div class="hero-stats">
-            <div class="stat-card">
-              <span class="stat-value">{{ total }}</span>
-              <span class="stat-desc">篇文章</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-value">{{ categoryCount }}</span>
-              <span class="stat-desc">个分类</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-value">{{ tagCount }}</span>
-              <span class="stat-desc">个标签</span>
+          <div class="hero-right">
+            <div class="hero-stats">
+              <div class="stat-card">
+                <span class="stat-value">{{ total }}</span>
+                <span class="stat-desc">篇文章</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">{{ categoryCount }}</span>
+                <span class="stat-desc">个分类</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">{{ tagCount }}</span>
+                <span class="stat-desc">个标签</span>
+              </div>
             </div>
           </div>
         </div>
@@ -107,7 +116,23 @@ onMounted(() => {
       </section>
     </div>
 
-    <Sidebar />
+    <div class="right-column">
+      <div class="ai-entry-card" @click="router.push('/agents')">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="ai-spark-icon">
+          <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3"/>
+          <path d="M12 2v4M12 18v4M2 12h4M18 12h4M5.64 5.64l2.83 2.83M15.54 15.54l2.83 2.83M5.64 18.36l2.83-2.83M15.54 8.46l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="ai-entry-text">
+          <span class="ai-entry-title">AI 智能助手</span>
+          <span class="ai-entry-desc">与智能体对话，探索无限可能</span>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="ai-entry-arrow">
+          <path d="M8 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <ChatPanel />
+    </div>
   </div>
 </template>
 
@@ -117,11 +142,86 @@ onMounted(() => {
   gap: var(--space-8);
   animation: fadeInUp 0.5s ease-out;
   align-items: flex-start;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  padding: 0 var(--space-8);
+  box-sizing: border-box;
 }
 
 .home-main {
   flex: 1;
   min-width: 0;
+}
+
+.right-column {
+  width: 340px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  position: sticky;
+  top: 80px;
+  align-self: flex-start;
+}
+
+/* ═══ AI Entry Card ═══ */
+.ai-entry-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: var(--border-accent);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+
+.ai-spark-icon {
+  flex-shrink: 0;
+  color: var(--color-amber-500);
+}
+
+.ai-entry-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-entry-title {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.ai-entry-desc {
+  display: block;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.ai-entry-arrow {
+  flex-shrink: 0;
+  color: var(--color-amber-500);
+  transition: transform var(--transition-fast);
+}
+
+.ai-entry-card:hover .ai-entry-arrow {
+  transform: translateX(3px);
 }
 
 /* ═══════════════════════════════════════════
@@ -163,10 +263,12 @@ onMounted(() => {
   gap: var(--space-10);
 }
 
-/* Avatar with breathing amber ring */
+.hero-left {
+  flex-shrink: 0;
+}
+
 .hero-avatar-wrap {
   position: relative;
-  flex-shrink: 0;
 }
 
 .avatar-ring {
@@ -181,8 +283,7 @@ onMounted(() => {
   border: 3px solid rgba(212, 168, 83, 0.25);
 }
 
-/* Name & Signature */
-.hero-text {
+.hero-center {
   flex: 1;
   min-width: 0;
 }
@@ -192,7 +293,7 @@ onMounted(() => {
   font-size: var(--text-3xl);
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 var(--space-2);
+  margin: 0 0 var(--space-3);
   letter-spacing: -0.03em;
 }
 
@@ -203,11 +304,13 @@ onMounted(() => {
   margin: 0;
 }
 
-/* Stats cards */
+.hero-right {
+  flex-shrink: 0;
+}
+
 .hero-stats {
   display: flex;
   gap: var(--space-4);
-  flex-shrink: 0;
 }
 
 .stat-card {
@@ -248,8 +351,13 @@ onMounted(() => {
    Article Section
    ═══════════════════════════════════════════ */
 .articles-section {
-  /* container for articles + pagination */
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6) var(--space-8);
+  border: 1px solid var(--border-default);
 }
+  /* container for articles + pagination */
+
 
 .section-header {
   display: flex;
@@ -284,14 +392,12 @@ onMounted(() => {
   font-weight: 500;
 }
 
-/* Staggered list animation */
 .article-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
 }
 
-/* Empty state */
 .empty-state {
   text-align: center;
   padding: var(--space-12) 0;
@@ -315,7 +421,17 @@ onMounted(() => {
 /* ═══════════════════════════════════════════
    Responsive
    ═══════════════════════════════════════════ */
+@media (max-width: 1400px) {
+  .right-column {
+    width: 300px;
+  }
+}
+
 @media (max-width: 1200px) {
+  .right-column {
+    display: none;
+  }
+
   .hero-body {
     gap: var(--space-6);
   }
@@ -346,18 +462,18 @@ onMounted(() => {
     gap: var(--space-5);
   }
 
-  .hero-stats {
-    flex-direction: row;
-    width: 100%;
-    justify-content: center;
-  }
-
   .hero-name {
     font-size: var(--text-2xl);
   }
 
   .hero-signature {
     font-size: var(--text-sm);
+  }
+
+  .hero-stats {
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
   }
 
   .stat-card {
