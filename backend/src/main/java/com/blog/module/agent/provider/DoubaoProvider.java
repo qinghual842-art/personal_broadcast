@@ -51,7 +51,7 @@ public class DoubaoProvider implements LlmProvider {
             String responseBody = response.body() != null ? response.body().string() : "";
             if (!response.isSuccessful()) {
                 log.error("Doubao API error: status={}, body={}", response.code(), responseBody);
-                throw new BusinessException(500, "AI服务调用失败，请检查API密钥或稍后重试");
+                throw new BusinessException(500, buildErrorMsg("Doubao", response.code(), responseBody));
             }
             JSONObject json = JSON.parseObject(responseBody);
             return json.getJSONArray("choices").getJSONObject(0)
@@ -60,6 +60,11 @@ public class DoubaoProvider implements LlmProvider {
             log.error("Doubao API call failed", e);
             throw new BusinessException(500, "AI服务连接失败，请稍后重试");
         }
+    }
+
+    private String buildErrorMsg(String provider, int status, String body) {
+        String detail = body.length() > 300 ? body.substring(0, 300) + "..." : body;
+        return "[" + provider + "] HTTP " + status + ": " + detail;
     }
 
     @Override

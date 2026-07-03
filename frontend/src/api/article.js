@@ -55,3 +55,23 @@ export function toggleLike(articleId) {
 export function checkLiked(articleId) {
   return request.get(`/articles/${articleId}/like`)
 }
+
+export function getUserArticles(params) {
+  return request.get('/user/articles', { params })
+}
+
+export function getUserArticle(id) {
+  return request.get(`/user/articles/${id}`)
+}
+
+export function createUserArticle(data) {
+  return request.post('/user/articles', data)
+}
+
+export function updateUserArticle(id, data) {
+  return request.put(`/user/articles/${id}`, data)
+}
+
+export function deleteUserArticle(id) {
+  return request.delete(`/user/articles/${id}`)
+}

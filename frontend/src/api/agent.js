@@ -43,3 +43,19 @@ export function deleteAgent(id) {
 export function toggleAgent(id) {
   return request.put(`/admin/agents/${id}/toggle`)
 }
+
+export function getUserAgents() {
+  return request.get('/user/agents')
+}
+
+export function createUserAgent(data) {
+  return request.post('/user/agents', data)
+}
+
+export function updateUserAgent(id, data) {
+  return request.put(`/user/agents/${id}`, data)
+}
+
+export function deleteUserAgent(id) {
+  return request.delete(`/user/agents/${id}`)
+}

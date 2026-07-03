@@ -11,4 +11,5 @@ public class ArticleQueryDTO extends PageQuery {
     private Long tagId;
     private String keyword;
     private Integer status;
+    private Long userId;
 }

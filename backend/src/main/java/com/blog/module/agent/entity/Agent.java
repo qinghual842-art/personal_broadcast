@@ -14,6 +14,7 @@ public class Agent {
     private String name;
     private String description;
     private String avatar;
+    private Long userId;
     private String capabilityDesc;
     private String provider;
     private String apiKeyEncrypted;

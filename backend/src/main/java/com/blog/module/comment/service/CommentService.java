@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface CommentService {
     PageResult<CommentVO> listByArticle(Long articleId, long page, long size);
-    void submit(Long articleId, CommentSubmitDTO dto, HttpServletRequest request);
+    void submit(Long articleId, CommentSubmitDTO dto, HttpServletRequest request, Long userId);
     PageResult<CommentVO> listAll(Integer status, long page, long size);
     void updateStatus(Long id, Integer status);
     void delete(Long id);

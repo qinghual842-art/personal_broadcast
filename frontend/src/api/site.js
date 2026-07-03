@@ -11,3 +11,7 @@ export function getAdminSiteConfig() {
 export function updateSiteConfig(data) {
   return request.put('/admin/site/config', data)
 }
+
+export function getOwnerInfo() {
+  return request.get('/site/owner')
+}

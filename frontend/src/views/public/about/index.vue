@@ -6,22 +6,22 @@ const siteStore = useSiteStore()
 </script>
 
 <template>
-  <div class="about-page">
-    <div class="about-card">
-      <h2 class="about-title">关于我</h2>
-      <MarkdownRenderer :content="siteStore.config.about_me || '暂无关于信息'" />
+  <div class="statement-page">
+    <div class="statement-card">
+      <h2 class="statement-title">博客声明</h2>
+      <MarkdownRenderer :content="siteStore.config.about_me || '此博客服务于每一个热爱交流的技术选手。'" />
     </div>
   </div>
 </template>
 
 <style scoped>
-.about-page {
+.statement-page {
   max-width: 960px;
   margin: 0 auto;
   animation: fadeInUp 0.5s ease-out;
 }
 
-.about-card {
+.statement-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
@@ -29,7 +29,7 @@ const siteStore = useSiteStore()
   box-shadow: var(--shadow-card);
 }
 
-.about-title {
+.statement-title {
   font-size: var(--text-2xl);
   font-weight: 700;
   font-family: var(--font-display);

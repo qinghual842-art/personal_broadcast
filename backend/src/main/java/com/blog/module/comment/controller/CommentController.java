@@ -5,6 +5,7 @@ import com.blog.common.Result;
 import com.blog.module.comment.dto.CommentSubmitDTO;
 import com.blog.module.comment.service.CommentService;
 import com.blog.module.comment.vo.CommentVO;
+import com.blog.security.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,9 @@ public class CommentController {
     public Result<?> submit(@PathVariable Long articleId,
                             @Valid @RequestBody CommentSubmitDTO dto,
                             HttpServletRequest request) {
-        commentService.submit(articleId, dto, request);
+        Long userId = UserContext.getUserId();
+        if (userId == null) return Result.fail(401, "请先登录");
+        commentService.submit(articleId, dto, request, userId);
         return Result.success();
     }
 

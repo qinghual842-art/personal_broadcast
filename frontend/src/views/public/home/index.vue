@@ -4,19 +4,21 @@ import { useRouter } from 'vue-router'
 import { getArticles } from '@/api/article'
 import { getCategories } from '@/api/category'
 import { getTags } from '@/api/tag'
+import { getOwnerInfo } from '@/api/site'
 import ArticleCard from '@/components/article/ArticleCard.vue'
 import Sidebar from '@/components/site/Sidebar.vue'
 import ChatPanel from '@/components/site/ChatPanel.vue'
 import Pagination from '@/components/common/Pagination.vue'
-import { useAuthStore } from '@/stores/auth'
+
+const DEFAULT_AVATAR = 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'
 
 const router = useRouter()
-const authStore = useAuthStore()
 const articles = ref([])
 const total = ref(0)
 const page = ref(1)
 const categoryCount = ref(0)
 const tagCount = ref(0)
+const owner = ref({ nickname: '博主', avatar: DEFAULT_AVATAR })
 
 async function fetchArticles() {
   const res = await getArticles({ page: page.value, size: 10 })
@@ -25,12 +27,16 @@ async function fetchArticles() {
 }
 
 async function fetchStats() {
-  const [catRes, tagRes] = await Promise.all([
+  const [catRes, tagRes, ownerRes] = await Promise.all([
     getCategories(),
-    getTags()
+    getTags(),
+    getOwnerInfo().catch(() => ({ data: null }))
   ])
   categoryCount.value = catRes.data?.length || 0
   tagCount.value = tagRes.data?.length || 0
+  if (ownerRes.data) {
+    owner.value = ownerRes.data
+  }
 }
 
 function handlePageChange(p) {
@@ -59,14 +65,13 @@ onMounted(() => {
               <div class="avatar-ring"></div>
               <el-avatar
                 :size="72"
-                :src="authStore.admin?.avatar"
-                icon="UserFilled"
+                :src="owner.avatar || DEFAULT_AVATAR"
                 class="hero-avatar"
               />
             </div>
           </div>
           <div class="hero-center">
-            <h1 class="hero-name">{{ authStore.admin?.nickname || '博主' }}</h1>
+            <h1 class="hero-name">{{ owner.nickname || '博主' }}</h1>
             <p class="hero-signature">
               在代码与文字之间，记录思考的轨迹。这里是我的数字花园，每一篇文章都是一次安静的对话。
             </p>

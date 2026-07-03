@@ -13,6 +13,7 @@ public class ArticleDetailVO extends ArticleVO {
     private Boolean liked = false;
     private Long userId;
     private String authorName;
+    private String authorAvatar;
 
     @Data
     public static class ArticleNavVO {

@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserVO register(UserRegisterDTO dto) {
+    public Map<String, Object> register(UserRegisterDTO dto) {
         if (dto == null || isBlank(dto.getUsername())) {
             throw new BusinessException(400, "用户名不能为空");
         }
@@ -48,10 +48,18 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setUsername(dto.getUsername().trim());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setNickname(dto.getNickname() != null ? dto.getNickname().trim() : dto.getUsername());
-        if (dto.getEmail() != null) user.setEmail(dto.getEmail().trim());
+        user.setNickname(dto.getNickname() != null && !dto.getNickname().isBlank() ? dto.getNickname().trim() : dto.getUsername());
+        if (dto.getEmail() != null && !dto.getEmail().isBlank()) user.setEmail(dto.getEmail().trim());
+        if (dto.getAvatar() != null && !dto.getAvatar().isBlank()) user.setAvatar(dto.getAvatar().trim());
         userMapper.insert(user);
-        return toVO(user);
+
+        String token = jwtTokenProvider.generateUserToken(user.getId());
+        redisTemplate.opsForValue().set(RedisKeyUtil.userTokenKey(user.getId()), token, Duration.ofHours(TOKEN_TTL_HOURS));
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("token", token);
+        result.put("user", toVO(user));
+        return result;
     }
 
     @Override

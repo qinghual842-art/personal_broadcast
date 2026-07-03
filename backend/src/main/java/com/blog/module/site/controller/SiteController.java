@@ -1,6 +1,7 @@
 package com.blog.module.site.controller;
 
 import com.blog.common.Result;
+import com.blog.module.admin.vo.AdminVO;
 import com.blog.module.site.service.SiteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,11 @@ public class SiteController {
     @GetMapping("/site/config")
     public Result<Map<String, String>> getPublicConfig() {
         return Result.success(siteService.getPublicConfig());
+    }
+
+    @GetMapping("/site/owner")
+    public Result<AdminVO> getOwnerInfo() {
+        return Result.success(siteService.getOwnerInfo());
     }
 
     @GetMapping("/admin/site/config")

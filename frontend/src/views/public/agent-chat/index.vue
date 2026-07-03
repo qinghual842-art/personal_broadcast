@@ -1,11 +1,15 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import { chatWithAgent, getAgent, getChatHistory, clearChatHistory } from '@/api/agent'
+import AgentAvatar from '@/components/common/AgentAvatar.vue'
 import { renderMarkdown } from '@/utils/markdown'
 import { ElMessage } from 'element-plus'
 
 const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 const agentId = computed(() => Number(route.params.id))
 const agent = ref(null)
 const messages = ref([])
@@ -14,10 +18,19 @@ const sending = ref(false)
 const sessionId = ref('')
 const messagesContainer = ref(null)
 
+function sessionKey(agentId) {
+  const uid = userStore.user?.id || 'anon'
+  return `agent_session_${agentId}_${uid}`
+}
+
 onMounted(async () => {
+  if (!userStore.isLoggedIn) {
+    router.push('/login')
+    return
+  }
   const res = await getAgent(agentId.value)
   agent.value = res.data
-  const saved = sessionStorage.getItem(`agent_session_${agentId.value}`)
+  const saved = sessionStorage.getItem(sessionKey(agentId.value))
   if (saved) {
     sessionId.value = saved
     try {
@@ -37,7 +50,7 @@ async function send() {
   try {
     const res = await chatWithAgent(agentId.value, { sessionId: sessionId.value, message: text })
     sessionId.value = res.data.sessionId
-    sessionStorage.setItem(`agent_session_${agentId.value}`, sessionId.value)
+    sessionStorage.setItem(sessionKey(agentId.value), sessionId.value)
     messages.value.push({ role: 'assistant', content: res.data.reply })
   } catch (e) {
     ElMessage.error('回复失败，请稍后重试')
@@ -69,7 +82,7 @@ async function scrollToBottom() {
     <!-- Header -->
     <div class="chat-topbar">
       <div class="chat-agent-info">
-        <el-avatar :size="40" :src="agent?.avatar" icon="Cpu" />
+        <AgentAvatar :name="agent?.name" :size="40" />
         <div>
           <h3>{{ agent?.name || '智能助手' }}</h3>
           <p>{{ agent?.description || 'AI 对话中...' }}</p>
@@ -96,7 +109,7 @@ async function scrollToBottom() {
         </div>
         <div class="message-avatar">
           <el-avatar v-if="msg.role === 'user'" :size="30" icon="UserFilled" />
-          <el-avatar v-else :size="30" :src="agent?.avatar" icon="Cpu" />
+          <AgentAvatar v-else :name="agent?.name" :size="30" />
         </div>
       </div>
 

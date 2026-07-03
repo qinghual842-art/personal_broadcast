@@ -15,9 +15,13 @@ const routes = [
       { path: 'categories', name: 'CategoryList', component: () => import('@/views/public/category-list/index.vue') },
       { path: 'tags', name: 'TagList', component: () => import('@/views/public/tag-list/index.vue') },
       { path: 'archive', name: 'Archive', component: () => import('@/views/public/archive/index.vue') },
-      { path: 'about', name: 'About', component: () => import('@/views/public/about/index.vue') },
+      { path: 'about', name: 'Statement', component: () => import('@/views/public/about/index.vue') },
       { path: 'agents', name: 'AgentList', component: () => import('@/views/public/agent-list/index.vue') },
       { path: 'agents/:id/chat', name: 'AgentChat', component: () => import('@/views/public/agent-chat/index.vue') },
+      { path: 'profile', name: 'UserProfile', component: () => import('@/views/public/profile/index.vue') },
+      { path: 'my-articles', name: 'MyArticles', component: () => import('@/views/public/my-articles/index.vue') },
+      { path: 'editor', name: 'Editor', component: () => import('@/views/public/editor/index.vue') },
+      { path: 'my-agents/create', name: 'UserAgentEditor', component: () => import('@/views/public/my-agents/editor.vue') },
     ]
   },
   // User login

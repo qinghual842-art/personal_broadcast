@@ -24,7 +24,7 @@ async function handleSave() {
       <el-form-item label="站点描述"><el-input v-model="form.site_desc" type="textarea" :rows="2" /></el-form-item>
       <el-form-item label="关键词"><el-input v-model="form.keywords" /></el-form-item>
       <el-form-item label="版权信息"><el-input v-model="form.copyright" /></el-form-item>
-      <el-form-item label="关于我"><el-input v-model="form.about_me" type="textarea" :rows="6" placeholder="支持 Markdown" /></el-form-item>
+      <el-form-item label="博客声明"><el-input v-model="form.about_me" type="textarea" :rows="6" placeholder="支持 Markdown" /></el-form-item>
       <el-form-item label="社交链接"><el-input v-model="form.social_links" type="textarea" :rows="3" placeholder='JSON格式' /></el-form-item>
       <el-form-item><el-button type="primary" @click="handleSave">保存设置</el-button></el-form-item>
     </el-form>

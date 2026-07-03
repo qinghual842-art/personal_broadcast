@@ -1,26 +1,18 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { createAgent, updateAgent, getAdminAgent } from '@/api/agent'
+import { useUserStore } from '@/stores/user'
+import { createUserAgent, updateUserAgent, getUserAgents } from '@/api/agent'
 import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
-const isEdit = computed(() => !!route.params.id)
-
-const personalityMap = [
-  { label: '热情', value: 0.9 },
-  { label: '温柔', value: 0.7 },
-  { label: '冷酷', value: 0.3 },
-]
-
-function tempToPersonality(t) {
-  const match = personalityMap.find(p => Math.abs(p.value - t) < 0.05)
-  return match ? t : 0.7
-}
+const userStore = useUserStore()
+const editId = computed(() => route.query.id)
+const isEdit = computed(() => !!editId.value)
 
 const form = ref({
-  name: '', avatar: '', capabilityDesc: '',
+  name: '', description: '', capabilityDesc: '',
   provider: '', apiKey: '', modelName: '',
   temperature: 0.7, maxTokens: 2048, contextLength: 10,
   isEnabled: 1, rateLimitPerMin: 10
@@ -45,77 +37,88 @@ const modelSuggestions = {
   doubao:   ['doubao-seed-2-1-pro-260628', 'doubao-seed-2-1-lite-260628', 'doubao-seed-1-6-pro', 'doubao-seed-1-6-lite'],
 }
 
+const personalityMap = [
+  { label: '热情', value: 0.9 },
+  { label: '温柔', value: 0.7 },
+  { label: '冷酷', value: 0.3 },
+]
+
 const currentSuggestions = computed(() => modelSuggestions[form.value.provider] || [])
+
+onMounted(async () => {
+  if (!userStore.isLoggedIn) {
+    router.push('/login')
+    return
+  }
+  if (editId.value) {
+    const res = await getUserAgents()
+    const list = res.data || []
+    const agent = list.find(a => a.id === Number(editId.value))
+    if (agent) {
+      form.value.name = agent.name || ''
+      form.value.description = agent.description || ''
+      form.value.capabilityDesc = agent.capabilityDesc || ''
+      form.value.provider = agent.provider || ''
+      form.value.modelName = agent.modelName || ''
+      form.value.temperature = agent.temperature != null ? agent.temperature : 0.7
+      form.value.isEnabled = agent.isEnabled ?? 1
+      form.value.apiKey = ''
+    } else {
+      ElMessage.error('智能体不存在')
+      router.push('/agents')
+    }
+  }
+})
 
 function selectModel(name) {
   form.value.modelName = name
 }
 
-onMounted(async () => {
-  if (isEdit.value) {
-    const res = await getAdminAgent(route.params.id)
-    Object.assign(form.value, res.data)
-    form.value.temperature = tempToPersonality(res.data.temperature ?? 0.7)
-    form.value.apiKey = ''
-  }
-})
-
 async function handleSave() {
-  if (!form.value.name) {
-    ElMessage.warning('请填写名称')
-    return
-  }
-  if (!form.value.capabilityDesc) {
-    ElMessage.warning('请填写能力描述')
-    return
-  }
-  if (!form.value.provider) {
-    ElMessage.warning('请选择大模型提供商')
-    return
-  }
-  if (!form.value.modelName) {
-    ElMessage.warning('请填写或选择模型名称')
-    return
-  }
-  if (!isEdit.value && !form.value.apiKey) {
-    ElMessage.warning('请输入API密钥')
-    return
-  }
+  if (!form.value.name) { ElMessage.warning('请填写名称'); return }
+  if (!form.value.provider) { ElMessage.warning('请选择大模型提供商'); return }
+  if (!form.value.modelName) { ElMessage.warning('请填写或选择模型名称'); return }
+  if (!isEdit.value && !form.value.apiKey) { ElMessage.warning('请输入API密钥'); return }
+
   saving.value = true
   try {
     if (isEdit.value) {
-      await updateAgent(route.params.id, form.value)
+      await updateUserAgent(editId.value, form.value)
       ElMessage.success('更新成功')
     } else {
-      await createAgent(form.value)
+      await createUserAgent(form.value)
       ElMessage.success('创建成功')
-      router.push('/admin/agents')
     }
-  } catch (e) {
-    // error already shown by axios interceptor
-  } finally {
-    saving.value = false
-  }
+    router.push('/agents')
+  } catch (e) { /* error shown by interceptor */ }
+  finally { saving.value = false }
 }
 </script>
 
 <template>
-  <div class="agent-edit">
-    <h3>{{ isEdit ? '编辑智能体' : '新建智能体' }}</h3>
+  <div class="editor-page">
+    <div class="edit-header">
+      <h3>{{ isEdit ? '编辑智能体' : '新建智能体' }}</h3>
+      <div class="header-btns">
+        <el-button @click="router.push('/agents')">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
+      </div>
+    </div>
+
     <el-form label-width="120px">
       <el-form-item label="名称">
-        <el-input v-model="form.name" placeholder="智能体名称" />
+        <el-input v-model="form.name" placeholder="给你的智能体起个名字" />
       </el-form-item>
       <el-form-item label="能力描述">
-        <el-input v-model="form.capabilityDesc" type="textarea" :rows="5" placeholder="系统提示词，描述智能体的能力和角色" />
+        <el-input v-model="form.capabilityDesc" type="textarea" :rows="4" placeholder="系统提示词，描述智能体的能力和角色" />
       </el-form-item>
       <el-form-item label="大模型提供商">
-        <el-select v-model="form.provider" placeholder="请选择提供商" clearable>
+        <el-select v-model="form.provider" placeholder="请选择提供商">
           <el-option v-for="p in providers" :key="p.value" :label="p.label" :value="p.value" />
         </el-select>
       </el-form-item>
       <el-form-item label="API密钥">
-        <el-input v-model="form.apiKey" type="password" show-password :placeholder="isEdit ? '留空则不修改' : '输入API密钥'" />
+        <el-input v-model="form.apiKey" type="password" show-password :placeholder="isEdit ? '留空则不修改' : '输入你的API密钥'" />
       </el-form-item>
       <el-form-item label="模型名称">
         <div class="model-name-wrap">
@@ -130,7 +133,7 @@ async function handleSave() {
             >{{ m }}</span>
           </div>
           <div class="model-hint" v-if="form.provider === 'doubao'">
-            豆包需在<a href="https://console.volcengine.com/ark" target="_blank">火山方舟控制台</a>创建推理端点，填入端点ID
+            豆包需在<a href="https://console.volcengine.com/ark" target="_blank">火山方舟控制台</a>创建推理端点，填入端点ID（如 ep-2024xxxxx）
           </div>
         </div>
       </el-form-item>
@@ -139,39 +142,45 @@ async function handleSave() {
           <el-option v-for="p in personalityMap" :key="p.value" :label="p.label" :value="p.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="是否启用">
-        <el-switch v-model="form.isEnabled" :active-value="1" :inactive-value="0" />
-      </el-form-item>
-      <el-form-item>
-        <el-button @click="router.push('/admin/agents')">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
-      </el-form-item>
     </el-form>
   </div>
 </template>
 
 <style scoped>
-.agent-edit {
+.editor-page {
+  max-width: 700px;
+  margin: 0 auto;
   background: var(--bg-surface);
   padding: var(--space-8);
   border-radius: var(--radius-xl);
-  max-width: 800px;
   border: 1px solid var(--border-default);
   box-shadow: var(--shadow-card);
+  animation: fadeInUp 0.5s ease-out;
 }
-.agent-edit h3 {
-  margin: 0 0 var(--space-6);
+
+.edit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.edit-header h3 {
+  margin: 0;
   font-size: var(--text-xl);
   font-weight: 700;
   color: var(--text-primary);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--border-light);
   font-family: var(--font-display);
 }
 
-.model-name-wrap {
-  width: 100%;
+.header-btns {
+  display: flex;
+  gap: var(--space-2);
 }
+
+.model-name-wrap { width: 100%; }
 
 .model-suggestions {
   display: flex;

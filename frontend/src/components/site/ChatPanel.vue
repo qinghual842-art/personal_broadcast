@@ -1,9 +1,16 @@
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { chatWithAgent, getAgents, getChatHistory } from '@/api/agent'
+import { useUserStore } from '@/stores/user'
+import AgentAvatar from '@/components/common/AgentAvatar.vue'
 import { renderMarkdown } from '@/utils/markdown'
 import { ElMessage } from 'element-plus'
+import { ArrowDown } from '@element-plus/icons-vue'
 
+const router = useRouter()
+const userStore = useUserStore()
+const agents = ref([])
 const agent = ref(null)
 const messages = ref([])
 const inputText = ref('')
@@ -13,27 +20,57 @@ const messagesContainer = ref(null)
 
 const agentId = computed(() => agent.value?.id || null)
 
+function sessionKey(aid) {
+  const uid = userStore.user?.id || 'anon'
+  return `agent_session_${aid}_${uid}`
+}
+
+function loadAgentHistory(a) {
+  agent.value = a
+  messages.value = []
+  sessionId.value = ''
+  if (userStore.isLoggedIn && a) {
+    const saved = sessionStorage.getItem(sessionKey(a.id))
+    if (saved) {
+      sessionId.value = saved
+      getChatHistory(a.id, saved).then(res => {
+        if (agent.value?.id === a.id) {
+          messages.value = res.data || []
+        }
+      }).catch(() => {})
+    }
+  }
+}
+
+function switchAgent(a) {
+  if (agent.value?.id === a.id) return
+  loadAgentHistory(a)
+}
+
 onMounted(async () => {
   try {
     const res = await getAgents()
-    const list = res.data || []
-    if (list.length > 0) {
-      agent.value = list[0]
-      const saved = sessionStorage.getItem(`agent_session_${list[0].id}`)
-      if (saved) {
-        sessionId.value = saved
-        try {
-          const history = await getChatHistory(list[0].id, sessionId.value)
-          messages.value = history.data || []
-        } catch (e) { /* ignore */ }
-      }
+    agents.value = res.data || []
+    if (agents.value.length > 0) {
+      loadAgentHistory(agents.value[0])
     }
   } catch (e) { /* ignore */ }
 })
 
+// Reload agents when login state changes
+watch(() => userStore.isLoggedIn, (loggedIn) => {
+  if (loggedIn && agents.value.length > 0 && agent.value) {
+    loadAgentHistory(agent.value)
+  }
+  if (!loggedIn) {
+    messages.value = []
+    sessionId.value = ''
+  }
+})
+
 async function send() {
   const text = inputText.value.trim()
-  if (!text || sending.value || !agentId.value) return
+  if (!text || sending.value || !agentId.value || !userStore.isLoggedIn) return
   inputText.value = ''
   messages.value.push({ role: 'user', content: text })
   sending.value = true
@@ -41,7 +78,7 @@ async function send() {
   try {
     const res = await chatWithAgent(agentId.value, { sessionId: sessionId.value, message: text })
     sessionId.value = res.data.sessionId
-    sessionStorage.setItem(`agent_session_${agentId.value}`, sessionId.value)
+    sessionStorage.setItem(sessionKey(agentId.value), sessionId.value)
     messages.value.push({ role: 'assistant', content: res.data.reply })
   } catch (e) {
     ElMessage.error('回复失败，请稍后重试')
@@ -63,10 +100,31 @@ async function scrollToBottom() {
   <aside class="chat-panel">
     <div class="chat-header">
       <div class="chat-header-info">
-        <el-avatar :size="32" :src="agent?.avatar" icon="Cpu" />
-        <div>
+        <AgentAvatar :name="agent?.name" :size="32" />
+        <div class="chat-header-select">
           <span class="chat-header-name">{{ agent?.name || 'AI 智能助手' }}</span>
-          <span class="chat-header-desc">{{ agent?.description || '随时为您解答' }}</span>
+          <el-dropdown v-if="userStore.isLoggedIn && agents.length > 1" trigger="click" @command="switchAgent">
+            <span class="chat-dropdown-trigger">
+              <span class="chat-header-desc">{{ agent?.description || '切换智能体' }}</span>
+              <el-icon :size="12"><ArrowDown /></el-icon>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  v-for="a in agents"
+                  :key="a.id"
+                  :command="a"
+                  :class="{ active: agent?.id === a.id }"
+                >
+                  <span class="agent-option">
+                    <AgentAvatar :name="a.name" :size="20" />
+                    <span class="agent-option-name">{{ a.name }}</span>
+                  </span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <span v-else class="chat-header-desc">{{ agent?.description || '随时为您解答' }}</span>
         </div>
       </div>
     </div>
@@ -85,7 +143,7 @@ async function scrollToBottom() {
       <div v-for="(msg, i) in messages" :key="i" :class="['message-row', msg.role]">
         <div class="message-avatar">
           <el-avatar v-if="msg.role === 'user'" :size="26" icon="UserFilled" />
-          <el-avatar v-else :size="26" :src="agent?.avatar" icon="Cpu" />
+          <AgentAvatar v-else :name="agent?.name" :size="26" />
         </div>
         <div class="message-bubble">
           <div class="bubble-content" v-html="renderMarkdown(msg.content)" />
@@ -94,7 +152,7 @@ async function scrollToBottom() {
 
       <div v-if="sending" class="message-row assistant">
         <div class="message-avatar">
-          <el-avatar :size="26" :src="agent?.avatar" icon="Cpu" />
+          <AgentAvatar :name="agent?.name" :size="26" />
         </div>
         <div class="message-bubble thinking-bubble">
           <span class="dot-pulse"></span>
@@ -102,7 +160,7 @@ async function scrollToBottom() {
       </div>
     </div>
 
-    <div class="chat-input-area">
+    <div class="chat-input-area" v-if="userStore.isLoggedIn">
       <div class="input-row">
         <el-input
           v-model="inputText"
@@ -122,6 +180,10 @@ async function scrollToBottom() {
           </svg>
         </button>
       </div>
+    </div>
+    <div class="chat-login-hint" v-else>
+      <p>登录后即可使用 AI 助手</p>
+      <el-button type="primary" size="small" @click="router.push('/login')">去登录</el-button>
     </div>
   </aside>
 </template>
@@ -144,7 +206,7 @@ async function scrollToBottom() {
 }
 
 .chat-header {
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-default);
   background: var(--bg-warm);
   flex-shrink: 0;
@@ -154,6 +216,11 @@ async function scrollToBottom() {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+.chat-header-select {
+  flex: 1;
+  min-width: 0;
 }
 
 .chat-header-name {
@@ -169,6 +236,45 @@ async function scrollToBottom() {
   font-size: 11px;
   color: var(--text-tertiary);
   margin-top: 1px;
+}
+
+.chat-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+  margin: -2px -6px;
+}
+
+.chat-dropdown-trigger:hover {
+  background: rgba(212, 168, 83, 0.08);
+}
+
+.chat-dropdown-trigger .el-icon {
+  color: var(--text-tertiary);
+  transition: transform var(--transition-fast);
+}
+
+.chat-dropdown-trigger:hover .el-icon {
+  color: var(--color-amber-500);
+}
+
+.agent-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.agent-option-name {
+  font-size: var(--text-sm);
+}
+
+:deep(.el-dropdown-menu__item.active) {
+  color: var(--color-amber-600);
+  font-weight: 600;
 }
 
 .chat-messages {
@@ -351,6 +457,20 @@ async function scrollToBottom() {
     opacity: 0.4;
     cursor: not-allowed;
   }
+}
+
+.chat-login-hint {
+  padding: var(--space-5);
+  border-top: 1px solid var(--border-default);
+  text-align: center;
+  flex-shrink: 0;
+  background: var(--bg-surface);
+}
+
+.chat-login-hint p {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
 }
 
 @media (max-width: 1400px) {

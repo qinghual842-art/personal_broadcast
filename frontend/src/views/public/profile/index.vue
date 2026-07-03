@@ -1,29 +1,37 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { updateProfile, changePassword, uploadAvatar } from '@/api/auth'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import { updateUserProfile, changeUserPassword, uploadUserAvatar } from '@/api/user'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 
 const DEFAULT_AVATAR = 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'
 
-const authStore = useAuthStore()
-const profileForm = ref({ nickname: '', avatar: '', email: '' })
+const router = useRouter()
+const userStore = useUserStore()
+
+const profileForm = ref({ nickname: '', avatar: '', email: '', bio: '' })
 const passwordForm = ref({ oldPassword: '', newPassword: '' })
 const uploading = ref(false)
 
 onMounted(() => {
+  if (!userStore.isLoggedIn) {
+    router.push('/login')
+    return
+  }
   profileForm.value = {
-    nickname: authStore.admin?.nickname || '',
-    avatar: authStore.admin?.avatar || '',
-    email: authStore.admin?.email || ''
+    nickname: userStore.user?.nickname || '',
+    avatar: userStore.user?.avatar || '',
+    email: userStore.user?.email || '',
+    bio: userStore.user?.bio || ''
   }
 })
 
 async function handleAvatarUpload(file) {
   uploading.value = true
   try {
-    const res = await uploadAvatar(file)
+    const res = await uploadUserAvatar(file)
     profileForm.value.avatar = res.data.url
     ElMessage.success('头像上传成功')
   } catch {
@@ -48,8 +56,8 @@ function beforeAvatarUpload(file) {
 }
 
 async function handleUpdateProfile() {
-  await updateProfile({ nickname: profileForm.value.nickname, avatar: profileForm.value.avatar, email: profileForm.value.email })
-  await authStore.refreshProfile()
+  await updateUserProfile(profileForm.value)
+  await userStore.refreshProfile()
   ElMessage.success('资料已更新')
 }
 
@@ -58,9 +66,10 @@ async function handleChangePassword() {
     ElMessage.warning('请填写密码')
     return
   }
-  await changePassword(passwordForm.value)
+  await changeUserPassword(passwordForm.value)
   ElMessage.success('密码已修改，请重新登录')
-  await authStore.logout()
+  await userStore.logout()
+  router.push('/login')
 }
 </script>
 
@@ -90,6 +99,9 @@ async function handleChangePassword() {
       </el-form-item>
       <el-form-item label="邮箱">
         <el-input v-model="profileForm.email" placeholder="请输入邮箱" />
+      </el-form-item>
+      <el-form-item label="简介">
+        <el-input v-model="profileForm.bio" type="textarea" :rows="3" placeholder="介绍一下自己..." />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" :loading="uploading" @click="handleUpdateProfile">更新资料</el-button>

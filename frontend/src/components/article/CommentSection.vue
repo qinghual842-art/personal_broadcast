@@ -1,14 +1,20 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { getComments, submitComment } from '@/api/comment'
+import { useUserStore } from '@/stores/user'
 import { formatDate } from '@/utils/date'
 import { ElMessage } from 'element-plus'
 
+const DEFAULT_AVATAR = 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'
+
 const props = defineProps({ articleId: { type: Number, required: true } })
+const router = useRouter()
+const userStore = useUserStore()
 const comments = ref([])
 const total = ref(0)
 const page = ref(1)
-const form = ref({ authorName: '', authorEmail: '', content: '' })
+const content = ref('')
 const submitting = ref(false)
 
 async function fetchComments() {
@@ -18,20 +24,23 @@ async function fetchComments() {
 }
 
 async function handleSubmit() {
-  if (!form.value.authorName.trim() || !form.value.content.trim()) {
-    ElMessage.warning('请填写昵称和评论内容')
+  if (!content.value.trim()) {
+    ElMessage.warning('请输入评论内容')
+    return
+  }
+  if (!userStore.isLoggedIn) {
+    router.push('/login')
     return
   }
   submitting.value = true
   try {
-    await submitComment(props.articleId, form.value)
-    ElMessage.success('评论成功，等待审核后展示')
-    form.value = { authorName: '', authorEmail: '', content: '' }
+    await submitComment(props.articleId, { content: content.value })
+    ElMessage.success('评论成功')
+    content.value = ''
     page.value = 1
     await fetchComments()
-  } finally {
-    submitting.value = false
-  }
+  } catch (e) { /* error shown by interceptor */ }
+  finally { submitting.value = false }
 }
 
 onMounted(fetchComments)
@@ -41,26 +50,15 @@ onMounted(fetchComments)
   <div class="comment-section">
     <h3 class="comment-heading">评论 ({{ total }})</h3>
 
-    <!-- 评论表单 -->
-    <div class="comment-form">
-      <div class="form-row">
-        <el-input
-          v-model="form.authorName"
-          placeholder="你的昵称 *"
-          size="default"
-          class="form-name"
-        >
-          <template #prefix>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="12" cy="7" r="4" stroke="#94a3b8" stroke-width="2"/>
-            </svg>
-          </template>
-        </el-input>
+    <!-- Logged-in comment form -->
+    <div class="comment-form" v-if="userStore.isLoggedIn">
+      <div class="form-user-info">
+        <el-avatar :size="36" :src="userStore.user?.avatar || DEFAULT_AVATAR" />
+        <strong>{{ userStore.user?.nickname || userStore.user?.username }}</strong>
       </div>
       <div class="form-row">
         <el-input
-          v-model="form.content"
+          v-model="content"
           type="textarea"
           :rows="3"
           placeholder="写下你的想法..."
@@ -73,15 +71,22 @@ onMounted(fetchComments)
       </div>
     </div>
 
-    <!-- 评论列表 -->
+    <!-- Login prompt -->
+    <div class="comment-login-hint" v-else>
+      <p>登录后即可发表评论</p>
+      <el-button type="primary" size="small" @click="router.push('/login')">去登录</el-button>
+    </div>
+
+    <!-- Comment list -->
     <div class="comment-list" v-if="comments.length">
       <div class="comment-item" v-for="c in comments" :key="c.id">
         <div class="comment-avatar">
-          <span class="avatar-letter">{{ c.authorName.charAt(0) }}</span>
+          <el-avatar :size="40" :src="c.authorAvatar || DEFAULT_AVATAR" />
         </div>
         <div class="comment-body">
           <div class="comment-header">
             <strong>{{ c.authorName }}</strong>
+            <span class="author-badge" v-if="c.isAuthor">作者</span>
             <span class="comment-time">{{ formatDate(c.createTime) }}</span>
           </div>
           <p class="comment-content">{{ c.content }}</p>
@@ -142,17 +147,40 @@ onMounted(fetchComments)
   border: 1px solid var(--border-light);
 }
 
-.form-row {
+.form-user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   margin-bottom: var(--space-3);
+
+  strong {
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+  }
 }
 
-.form-name {
-  max-width: 280px;
+.form-row {
+  margin-bottom: var(--space-3);
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.comment-login-hint {
+  margin-bottom: var(--space-8);
+  background: var(--bg-subtle);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  text-align: center;
+
+  p {
+    margin: 0 0 var(--space-3);
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+  }
 }
 
 /* Comment Items */
@@ -176,19 +204,6 @@ onMounted(fetchComments)
   flex-shrink: 0;
 }
 
-.avatar-letter {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-600));
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: var(--text-md);
-}
-
 .comment-body {
   flex: 1;
   min-width: 0;
@@ -205,6 +220,16 @@ onMounted(fetchComments)
     font-size: var(--text-sm);
     font-weight: 600;
   }
+}
+
+.author-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-amber-500);
+  padding: 1px 6px;
+  border-radius: 999px;
+  line-height: 1.4;
 }
 
 .comment-time {

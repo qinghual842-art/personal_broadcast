@@ -11,6 +11,7 @@ public class Comment {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long articleId;
+    private Long userId;
     private Long parentId;
     private String authorName;
     private String authorEmail;

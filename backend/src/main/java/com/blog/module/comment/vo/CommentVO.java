@@ -9,7 +9,9 @@ public class CommentVO {
     private Long articleId;
     private Long parentId;
     private String authorName;
+    private String authorAvatar;
     private String content;
     private Integer status;
+    private Boolean isAuthor;
     private LocalDateTime createTime;
 }

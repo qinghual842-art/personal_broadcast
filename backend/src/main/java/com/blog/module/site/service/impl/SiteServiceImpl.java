@@ -2,11 +2,15 @@ package com.blog.module.site.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.blog.exception.BusinessException;
+import com.blog.module.admin.entity.Admin;
+import com.blog.module.admin.mapper.AdminMapper;
+import com.blog.module.admin.vo.AdminVO;
 import com.blog.module.site.entity.SiteConfig;
 import com.blog.module.site.mapper.SiteConfigMapper;
 import com.blog.module.site.service.SiteService;
 import com.blog.util.RedisKeyUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +23,7 @@ import java.util.stream.Collectors;
 public class SiteServiceImpl implements SiteService {
 
     private final SiteConfigMapper siteConfigMapper;
+    private final AdminMapper adminMapper;
     private final StringRedisTemplate redisTemplate;
 
     private static final List<String> PUBLIC_KEYS = List.of(
@@ -82,5 +87,15 @@ public class SiteServiceImpl implements SiteService {
 
         // Evict cache
         redisTemplate.delete(RedisKeyUtil.siteConfigCache());
+    }
+
+    @Override
+    public AdminVO getOwnerInfo() {
+        Admin admin = adminMapper.selectOne(
+                new LambdaQueryWrapper<Admin>().eq(Admin::getUsername, "admin"));
+        if (admin == null) return null;
+        AdminVO vo = new AdminVO();
+        BeanUtils.copyProperties(admin, vo);
+        return vo;
     }
 }

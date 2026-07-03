@@ -28,6 +28,10 @@ onMounted(async () => {
       <div class="detail-card">
         <header class="detail-header">
           <h1 class="detail-title">{{ article.title }}</h1>
+          <div class="detail-author" v-if="article.authorName">
+            <el-avatar :size="28" :src="article.authorAvatar || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'" />
+            <span class="author-name">{{ article.authorName }}</span>
+          </div>
           <div class="detail-meta">
             <span class="meta-item">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -141,8 +145,21 @@ onMounted(async () => {
   font-family: var(--font-serif);
   color: var(--text-primary);
   line-height: 1.35;
-  margin: 0 0 var(--space-5);
+  margin: 0 0 var(--space-4);
   letter-spacing: 0.01em;
+}
+
+.detail-author {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.author-name {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
 }
 
 .detail-meta {

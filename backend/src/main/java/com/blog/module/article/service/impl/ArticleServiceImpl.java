@@ -22,6 +22,8 @@ import com.blog.module.category.entity.Category;
 import com.blog.module.category.mapper.CategoryMapper;
 import com.blog.module.tag.entity.Tag;
 import com.blog.module.tag.mapper.TagMapper;
+import com.blog.module.user.service.UserService;
+import com.blog.module.user.vo.UserVO;
 import com.blog.util.RedisKeyUtil;
 import lombok.RequiredArgsConstructor;
 import org.commonmark.node.Node;
@@ -47,6 +49,7 @@ public class ArticleServiceImpl implements ArticleService {
     private final TagMapper tagMapper;
     private final StringRedisTemplate redisTemplate;
     private final ArticleLikeMapper articleLikeMapper;
+    private final UserService userService;
 
     private static final int DEFAULT_PAGE = 1;
     private static final int DEFAULT_SIZE = 10;
@@ -114,6 +117,18 @@ public class ArticleServiceImpl implements ArticleService {
         ArticleDetailVO vo = new ArticleDetailVO();
         BeanUtils.copyProperties(article, vo);
         enrichArticleVO(vo, article);
+
+        // Populate author info
+        Long authorUserId = article.getUserId();
+        if (authorUserId != null && authorUserId > 0) {
+            UserVO author = userService.getUserById(authorUserId);
+            if (author != null) {
+                vo.setUserId(author.getId());
+                vo.setAuthorName(author.getNickname() != null ? author.getNickname() : author.getUsername());
+                vo.setAuthorAvatar(author.getAvatar());
+            }
+        }
+
         vo.setPrev(getPrevArticle(id));
         vo.setNext(getNextArticle(id));
         return vo;
@@ -168,6 +183,24 @@ public class ArticleServiceImpl implements ArticleService {
         sanitizePagination(query);
 
         LambdaQueryWrapper<Article> wrapper = new LambdaQueryWrapper<Article>()
+                .orderByDesc(Article::getCreateTime);
+        if (query.getStatus() != null) {
+            wrapper.eq(Article::getStatus, query.getStatus());
+        }
+        if (StrUtil.isNotBlank(query.getKeyword())) {
+            wrapper.like(Article::getTitle, query.getKeyword());
+        }
+        return buildPageResult(articleMapper.selectPage(new Page<>(query.getPage(), query.getSize()), wrapper));
+    }
+
+    @Override
+    public PageResult<ArticleVO> userPageList(ArticleQueryDTO query) {
+        requireNonNull(query, "查询参数不能为空");
+        requireNonNull(query.getUserId(), "用户ID不能为空");
+        sanitizePagination(query);
+
+        LambdaQueryWrapper<Article> wrapper = new LambdaQueryWrapper<Article>()
+                .eq(Article::getUserId, query.getUserId())
                 .orderByDesc(Article::getCreateTime);
         if (query.getStatus() != null) {
             wrapper.eq(Article::getStatus, query.getStatus());

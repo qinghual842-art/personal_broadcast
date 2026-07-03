@@ -73,7 +73,7 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
         <router-link to="/categories" class="nav-item">分类</router-link>
         <router-link to="/tags" class="nav-item">标签</router-link>
         <router-link to="/agents" class="nav-item">智能助手</router-link>
-        <router-link to="/about" class="nav-item">关于我</router-link>
+        <router-link to="/about" class="nav-item">博客声明</router-link>
       </nav>
 
       <!-- Actions -->
@@ -103,7 +103,7 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
           </router-link>
           <el-dropdown trigger="click" @command="handleCommand">
             <button class="user-btn">
-              <el-avatar :size="30" :src="userStore.user?.avatar" icon="UserFilled" />
+              <el-avatar :size="30" :src="userStore.user?.avatar || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'" />
               <span class="user-name">{{ userStore.user?.nickname || userStore.user?.username }}</span>
             </button>
             <template #dropdown>

@@ -7,7 +7,7 @@ import com.blog.module.user.vo.UserVO;
 import java.util.Map;
 
 public interface UserService {
-    UserVO register(UserRegisterDTO dto);
+    Map<String, Object> register(UserRegisterDTO dto);
     Map<String, Object> login(UserLoginDTO dto);
     void logout(Long userId);
     UserVO getProfile(Long userId);

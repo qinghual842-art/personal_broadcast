@@ -11,10 +11,11 @@ import com.blog.module.comment.entity.Comment;
 import com.blog.module.comment.mapper.CommentMapper;
 import com.blog.module.comment.service.CommentService;
 import com.blog.module.comment.vo.CommentVO;
+import com.blog.module.user.service.UserService;
+import com.blog.module.user.vo.UserVO;
 import com.blog.util.IpUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentMapper commentMapper;
     private final ArticleMapper articleMapper;
+    private final UserService userService;
 
     private static final int DEFAULT_PAGE = 1;
     private static final int DEFAULT_SIZE = 10;
@@ -45,17 +47,23 @@ public class CommentServiceImpl implements CommentService {
                         .eq(Comment::getStatus, 1)
                         .orderByDesc(Comment::getCreateTime));
 
-        List<CommentVO> records = p.getRecords().stream().map(this::toCommentVO).collect(Collectors.toList());
+        // Get article author to mark author comments
+        Article article = articleMapper.selectById(articleId);
+        Long authorUserId = article != null ? article.getUserId() : null;
+
+        List<CommentVO> records = p.getRecords().stream()
+                .map(c -> toCommentVO(c, authorUserId))
+                .collect(Collectors.toList());
         return new PageResult<>(p.getTotal(), p.getCurrent(), p.getSize(), records);
     }
 
     @Override
     @Transactional
-    public void submit(Long articleId, CommentSubmitDTO dto, HttpServletRequest request) {
+    public void submit(Long articleId, CommentSubmitDTO dto, HttpServletRequest request, Long userId) {
         requireNonNull(articleId, "文章ID不能为空");
         requireNonNull(dto, "评论数据不能为空");
-        requireNotBlank(dto.getAuthorName(), "昵称不能为空");
         requireNotBlank(dto.getContent(), "评论内容不能为空");
+        requireNonNull(userId, "请先登录");
 
         if (dto.getContent().length() > MAX_COMMENT_LENGTH) {
             throw new BusinessException(400, "评论内容过长，最多允许" + MAX_COMMENT_LENGTH + "个字符");
@@ -66,14 +74,18 @@ public class CommentServiceImpl implements CommentService {
             throw new BusinessException(404, "文章不存在");
         }
 
+        UserVO user = userService.getUserById(userId);
+        if (user == null) throw new BusinessException(401, "用户不存在");
+
         Comment comment = new Comment();
         comment.setArticleId(articleId);
-        comment.setAuthorName(dto.getAuthorName().trim());
-        comment.setAuthorEmail(dto.getAuthorEmail());
+        comment.setUserId(userId);
+        comment.setAuthorName(user.getNickname() != null ? user.getNickname() : user.getUsername());
+        comment.setAuthorEmail(user.getEmail());
         comment.setContent(dto.getContent().trim());
         comment.setParentId(dto.getParentId());
         comment.setIpAddress(request != null ? IpUtil.getClientIp(request) : "");
-        comment.setStatus(1); // auto-approve
+        comment.setStatus(1);
         commentMapper.insert(comment);
 
         // Update comment count atomically
@@ -95,7 +107,7 @@ public class CommentServiceImpl implements CommentService {
         }
         Page<Comment> p = commentMapper.selectPage(new Page<>(page, size), wrapper);
 
-        List<CommentVO> records = p.getRecords().stream().map(this::toCommentVO).collect(Collectors.toList());
+        List<CommentVO> records = p.getRecords().stream().map(c -> toCommentVO(c, null)).collect(Collectors.toList());
         return new PageResult<>(p.getTotal(), p.getCurrent(), p.getSize(), records);
     }
 
@@ -162,9 +174,22 @@ public class CommentServiceImpl implements CommentService {
 
     // ─── Helpers ─────────────────────────────────────────────────
 
-    private CommentVO toCommentVO(Comment c) {
+    private CommentVO toCommentVO(Comment c, Long authorUserId) {
         CommentVO vo = new CommentVO();
-        BeanUtils.copyProperties(c, vo);
+        vo.setId(c.getId());
+        vo.setArticleId(c.getArticleId());
+        vo.setParentId(c.getParentId());
+        vo.setAuthorName(c.getAuthorName());
+        vo.setContent(c.getContent());
+        vo.setStatus(c.getStatus());
+        vo.setCreateTime(c.getCreateTime());
+        if (c.getUserId() != null) {
+            UserVO user = userService.getUserById(c.getUserId());
+            if (user != null && user.getAvatar() != null) {
+                vo.setAuthorAvatar(user.getAvatar());
+            }
+            vo.setIsAuthor(c.getUserId().equals(authorUserId));
+        }
         return vo;
     }
 

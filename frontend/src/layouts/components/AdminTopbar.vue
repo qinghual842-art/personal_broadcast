@@ -36,7 +36,7 @@ const currentTitle = breadcrumbMap[route.path] || ''
     <div class="topbar-right">
       <el-dropdown trigger="click">
         <span class="user-info">
-          <el-avatar :size="32" :src="authStore.admin?.avatar" />
+          <el-avatar :size="32" :src="authStore.admin?.avatar || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'" />
           <span class="user-name">{{ authStore.admin?.nickname || 'Admin' }}</span>
           <el-icon :size="14" class="dropdown-icon"><ArrowDown /></el-icon>
         </span>

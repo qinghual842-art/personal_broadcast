@@ -23,3 +23,9 @@ export function updateUserProfile(data) {
 export function changeUserPassword(data) {
   return request.put('/user/password', data)
 }
+
+export function uploadUserAvatar(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request.post('/user/upload/avatar', formData)
+}

@@ -3,24 +3,30 @@ import { ref, onMounted } from 'vue'
 import { getCategories } from '@/api/category'
 import { getTags } from '@/api/tag'
 import { getHotArticles } from '@/api/article'
+import { getOwnerInfo } from '@/api/site'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+
+const DEFAULT_AVATAR = 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'
 
 const categories = ref([])
 const tags = ref([])
 const hotArticles = ref([])
+const owner = ref({ nickname: '博主', avatar: DEFAULT_AVATAR })
 const router = useRouter()
-const authStore = useAuthStore()
 
 onMounted(async () => {
-  const [catRes, tagRes, hotRes] = await Promise.all([
+  const [catRes, tagRes, hotRes, ownerRes] = await Promise.all([
     getCategories(),
     getTags(),
-    getHotArticles(5)
+    getHotArticles(5),
+    getOwnerInfo().catch(() => ({ data: null }))
   ])
   categories.value = catRes.data
   tags.value = tagRes.data
   hotArticles.value = hotRes.data
+  if (ownerRes.data) {
+    owner.value = ownerRes.data
+  }
 })
 
 function goArticle(id) {
@@ -41,10 +47,10 @@ function goTag(id) {
     <!-- Profile Widget -->
     <div class="widget profile-widget">
       <div class="profile-avatar">
-        <el-avatar :size="64" :src="authStore.admin?.avatar" icon="UserFilled" />
+        <el-avatar :size="64" :src="owner.avatar || DEFAULT_AVATAR" />
       </div>
       <div class="profile-info">
-        <strong>{{ authStore.admin?.nickname || '博主' }}</strong>
+        <strong>{{ owner.nickname || '博主' }}</strong>
         <span>技术博客作者</span>
       </div>
       <div class="profile-stats">

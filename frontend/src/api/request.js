@@ -9,9 +9,15 @@ const request = axios.create({
 
 // ─── Request interceptor ──────────────────────────────────────
 request.interceptors.request.use(config => {
-  const token = sessionStorage.getItem('token') || sessionStorage.getItem('user_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  const adminToken = sessionStorage.getItem('token')
+  const userToken = sessionStorage.getItem('user_token')
+  // Admin endpoints use admin token, everything else prefers user token
+  if (config.url.startsWith('/admin/') && adminToken) {
+    config.headers.Authorization = `Bearer ${adminToken}`
+  } else if (userToken) {
+    config.headers.Authorization = `Bearer ${userToken}`
+  } else if (adminToken) {
+    config.headers.Authorization = `Bearer ${adminToken}`
   }
   return config
 })

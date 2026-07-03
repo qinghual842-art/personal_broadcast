@@ -7,6 +7,7 @@ import com.blog.module.agent.service.AgentService;
 import com.blog.module.agent.vo.AgentChatVO;
 import com.blog.module.agent.vo.AgentMessageVO;
 import com.blog.module.agent.vo.AgentVO;
+import com.blog.security.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,8 @@ public class AgentController {
 
     @GetMapping
     public Result<List<AgentVO>> listEnabled() {
-        return Result.success(agentService.listEnabled());
+        Long userId = UserContext.getUserId();
+        return Result.success(agentService.listEnabled(userId));
     }
 
     @GetMapping("/{id}")

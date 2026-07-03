@@ -2,8 +2,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { uploadUserAvatar } from '@/api/user'
 import { ElMessage } from 'element-plus'
-import { User, Lock, Message } from '@element-plus/icons-vue'
+import { User, Lock, Message, Plus } from '@element-plus/icons-vue'
+
+const DEFAULT_AVATAR = 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -12,7 +15,8 @@ const loading = ref(false)
 const errorMsg = ref('')
 
 const loginForm = ref({ username: '', password: '' })
-const registerForm = ref({ username: '', password: '', nickname: '', email: '' })
+const registerForm = ref({ username: '', password: '', nickname: '', email: '', avatar: '' })
+const registerAvatarFile = ref(null)
 
 async function handleLogin() {
   errorMsg.value = ''
@@ -44,6 +48,10 @@ async function handleRegister() {
   }
   loading.value = true
   try {
+    if (registerAvatarFile.value) {
+      const res = await uploadUserAvatar(registerAvatarFile.value)
+      registerForm.value.avatar = res.data.url
+    }
     await userStore.register(registerForm.value)
     ElMessage.success('注册成功，已自动登录')
     router.push('/')
@@ -52,6 +60,23 @@ async function handleRegister() {
   } finally {
     loading.value = false
   }
+}
+
+const avatarPreviewUrl = ref(DEFAULT_AVATAR)
+
+function handleAvatarChange(file) {
+  const isImage = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.raw.type)
+  if (!isImage) {
+    ElMessage.error('仅支持 JPG、PNG、GIF、WebP 格式')
+    return
+  }
+  const isLt2M = file.raw.size / 1024 / 1024 < 2
+  if (!isLt2M) {
+    ElMessage.error('头像大小不能超过 2MB')
+    return
+  }
+  registerAvatarFile.value = file.raw
+  avatarPreviewUrl.value = URL.createObjectURL(file.raw)
 }
 
 function onLoginClick(e) {
@@ -109,6 +134,22 @@ function onRegisterClick(e) {
 
       <!-- Register Form -->
       <el-form v-else @submit.prevent="handleRegister" class="login-form">
+        <el-form-item>
+          <div class="register-avatar">
+            <el-upload
+              class="avatar-uploader"
+              :show-file-list="false"
+              :auto-upload="false"
+              :on-change="handleAvatarChange"
+            >
+              <el-avatar :size="72" :src="avatarPreviewUrl" />
+              <div class="avatar-overlay">
+                <el-icon :size="16"><Plus /></el-icon>
+              </div>
+            </el-upload>
+            <span class="avatar-label">头像（选填）</span>
+          </div>
+        </el-form-item>
         <el-form-item>
           <el-input v-model="registerForm.username" placeholder="用户名" :prefix-icon="User" size="large" @keyup.enter="handleRegister" />
         </el-form-item>
@@ -191,4 +232,41 @@ function onRegisterClick(e) {
 .back-link:hover { color: var(--color-primary-600); }
 .admin-link { color: var(--text-tertiary); font-weight: 400; }
 .admin-link:hover { color: var(--color-primary-600); }
+
+.register-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 auto;
+}
+.avatar-uploader {
+  position: relative;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  transition: transform var(--transition-fast);
+}
+.avatar-uploader:hover {
+  transform: scale(1.05);
+}
+.avatar-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  border-radius: 50%;
+}
+.avatar-uploader:hover .avatar-overlay {
+  opacity: 1;
+}
+.avatar-label {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
 </style>

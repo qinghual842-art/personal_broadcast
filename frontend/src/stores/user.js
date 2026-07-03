@@ -23,12 +23,10 @@ export const useUserStore = defineStore('user', () => {
 
   async function register(data) {
     const res = await userRegister(data)
-    token.value = res.data?.token || ''
-    user.value = res.data?.user || null
-    if (token.value) {
-      sessionStorage.setItem('user_token', token.value)
-      sessionStorage.setItem('user_info', JSON.stringify(user.value))
-    }
+    token.value = res.data.token
+    user.value = res.data.user
+    sessionStorage.setItem('user_token', res.data.token)
+    sessionStorage.setItem('user_info', JSON.stringify(res.data.user))
     return res.data
   }
 

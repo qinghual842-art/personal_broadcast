@@ -17,6 +17,7 @@ public interface ArticleService {
     List<ArticleArchiveVO> archive();
     ArticleDetailVO.ArticleNavVO getPrevNext(Long id);
     PageResult<ArticleVO> adminPageList(ArticleQueryDTO query);
+    PageResult<ArticleVO> userPageList(ArticleQueryDTO query);
     ArticleDetailVO getForEdit(Long id);
     void create(ArticleSaveDTO dto);
     void createWithUser(ArticleSaveDTO dto, Long userId);

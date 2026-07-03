@@ -26,18 +26,18 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         ensureAdmin();
-        ensureUser("tech_writer", "test123", "技术写手", "tech@blog.com", "热爱分享编程经验的全栈开发者");
-        ensureUser("code_reader", "demo123", "代码读者", "code@blog.com", "每天阅读技术文章的终身学习者");
+        ensureUser("test001", "testpass001", "技术写手", "tech@blog.com", "热爱分享编程经验的全栈开发者");
+        ensureUser("test002", "testpass002", "代码读者", "code@blog.com", "每天阅读技术文章的终身学习者");
         initSiteConfig();
     }
 
-    /**
-     * 无条件删除旧管理员并重建，确保密码由 Java 原生 BCryptPasswordEncoder 生成。
-     * 外部库（bcryptjs/Python bcrypt）生成的 BCrypt 哈希与 jBCrypt 存在字节级不兼容，
-     * 因此不用 matches() 判断——直接删旧建新，由 Java 自己生成哈希。
-     */
     private void ensureAdmin() {
-        adminMapper.delete(new LambdaQueryWrapper<Admin>().eq(Admin::getUsername, "admin"));
+        Admin existing = adminMapper.selectOne(
+                new LambdaQueryWrapper<Admin>().eq(Admin::getUsername, "admin"));
+        if (existing != null) {
+            log.info("管理员账号已存在，跳过初始化");
+            return;
+        }
         Admin admin = new Admin();
         admin.setUsername("admin");
         admin.setNickname("博主");
@@ -48,7 +48,11 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void ensureUser(String username, String rawPwd, String nickname, String email, String bio) {
-        userMapper.delete(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        User existing = userMapper.selectOne(
+                new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        if (existing != null) {
+            return;
+        }
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(rawPwd));
@@ -64,7 +68,7 @@ public class DataInitializer implements CommandLineRunner {
             insertConfig("site_name", "我的个人博客");
             insertConfig("site_desc", "个人技术博客，记录学习与生活");
             insertConfig("copyright", "专门服务于自己");
-            insertConfig("about_me", "## 关于我\n\n一位热爱技术的开发者，在这里分享我的学习心得和技术文章。");
+            insertConfig("about_me", "## 博客声明\n\n此博客服务于每一个热爱交流的技术选手。");
             insertConfig("social_links", "{\"github\":\"https://github.com\",\"email\":\"admin@blog.com\"}");
             insertConfig("keywords", "技术博客,编程,AI");
             insertConfig("site_logo", "");

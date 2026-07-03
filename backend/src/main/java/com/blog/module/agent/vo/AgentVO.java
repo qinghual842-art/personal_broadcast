@@ -19,5 +19,6 @@ public class AgentVO {
     private Integer contextLength;
     private Integer isEnabled;
     private Integer rateLimitPerMin;
+    private Long userId;
     private LocalDateTime createTime;
 }
