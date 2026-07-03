@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: non_null
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+blog:
+  jwt:
+    secret: ${JWT_SECRET:blog-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256}
+    expiration: ${JWT_EXPIRATION:7200000}
+  aes:
+    secret-key: ${AES_SECRET_KEY:blog-aes-key-256bits-must-be-32bytes!!}
+  upload:
+    path: ${UPLOAD_PATH:./uploads}
+    max-size: ${UPLOAD_MAX_SIZE:10MB}

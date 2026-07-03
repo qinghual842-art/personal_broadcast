@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personal Broadcast · 个人博客</title>
+
+    <!-- Fonts: Playfair Display (serif display) + DM Sans (body) + JetBrains Mono (code) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&display=swap" rel="stylesheet">
+
+    <!-- Anti-flash: 防止深色模式/字体缩放闪烁 -->
+    <script>
+      (function() {
+        var theme = localStorage.getItem('blog_theme');
+        var fontSize = localStorage.getItem('blog_font_scale');
+        var bgColor = localStorage.getItem('blog_bg_color');
+        if (theme === 'dark') document.documentElement.dataset.theme = 'dark';
+        if (fontSize) document.documentElement.style.fontSize = (16 * Number(fontSize) / 100).toFixed(1) + 'px';
+        if (bgColor) document.documentElement.style.setProperty('--bg-page-override', bgColor);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

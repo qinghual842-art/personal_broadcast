@@ -1,0 +1,34 @@
+# Environment variables
+.env
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Build
+target/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads
+uploads/
+.uploads/
+
+# Tool configs
+.trae/
+.workbuddy/
+
+# Frontend env files
+frontend/.env.*

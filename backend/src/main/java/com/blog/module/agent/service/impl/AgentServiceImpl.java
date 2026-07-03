@@ -1,0 +1,160 @@
+package com.blog.module.agent.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.blog.exception.BusinessException;
+import com.blog.module.agent.dto.AgentSaveDTO;
+import com.blog.module.agent.entity.Agent;
+import com.blog.module.agent.mapper.AgentMapper;
+import com.blog.module.agent.service.AgentService;
+import com.blog.module.agent.vo.AgentVO;
+import com.blog.util.AesUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class AgentServiceImpl implements AgentService {
+
+    private final AgentMapper agentMapper;
+    private final AesUtil aesUtil;
+
+    @Override
+    public List<AgentVO> listEnabled() {
+        List<Agent> list = agentMapper.selectList(
+                new LambdaQueryWrapper<Agent>()
+                        .eq(Agent::getIsEnabled, 1)
+                        .orderByDesc(Agent::getCreateTime));
+        return list.stream().map(this::toVO).toList();
+    }
+
+    @Override
+    public List<AgentVO> listAllAdmin() {
+        List<Agent> list = agentMapper.selectList(
+                new LambdaQueryWrapper<Agent>()
+                        .orderByDesc(Agent::getCreateTime));
+        return list.stream().map(this::toVO).toList();
+    }
+
+    @Override
+    public AgentVO getById(Long id) {
+        if (id == null) {
+            throw new BusinessException(400, "智能体ID不能为空");
+        }
+        Agent agent = agentMapper.selectById(id);
+        if (agent == null) {
+            throw new BusinessException(404, "智能体不存在");
+        }
+        return toVO(agent);
+    }
+
+    @Override
+    public AgentVO getAdminById(Long id) {
+        if (id == null) {
+            throw new BusinessException(400, "智能体ID不能为空");
+        }
+        Agent agent = agentMapper.selectById(id);
+        if (agent == null) {
+            throw new BusinessException(404, "智能体不存在");
+        }
+        return toVO(agent);
+    }
+
+    @Override
+    @Transactional
+    public void create(AgentSaveDTO dto) {
+        if (dto == null || isBlank(dto.getName())) {
+            throw new BusinessException(400, "智能体名称不能为空");
+        }
+        if (isBlank(dto.getProvider())) {
+            throw new BusinessException(400, "提供商不能为空");
+        }
+        if (isBlank(dto.getApiKey())) {
+            throw new BusinessException(400, "API Key不能为空");
+        }
+        if (isBlank(dto.getModelName())) {
+            throw new BusinessException(400, "模型名称不能为空");
+        }
+
+        Agent agent = new Agent();
+        BeanUtils.copyProperties(dto, agent, "apiKey", "id", "createTime", "updateTime");
+        agent.setApiKeyEncrypted(aesUtil.encrypt(dto.getApiKey()));
+        if (agent.getIsEnabled() == null) {
+            agent.setIsEnabled(0);
+        }
+        if (agent.getRateLimitPerMin() == null) {
+            agent.setRateLimitPerMin(10);
+        }
+        if (agent.getContextLength() == null) {
+            agent.setContextLength(10);
+        }
+        agentMapper.insert(agent);
+    }
+
+    @Override
+    @Transactional
+    public void update(Long id, AgentSaveDTO dto) {
+        if (id == null) {
+            throw new BusinessException(400, "智能体ID不能为空");
+        }
+        if (dto == null || isBlank(dto.getName())) {
+            throw new BusinessException(400, "智能体名称不能为空");
+        }
+
+        Agent agent = agentMapper.selectById(id);
+        if (agent == null) {
+            throw new BusinessException(404, "智能体不存在");
+        }
+
+        BeanUtils.copyProperties(dto, agent, "id", "apiKey", "apiKeyEncrypted", "createTime");
+
+        // Only re-encrypt if a new API key is provided
+        if (dto.getApiKey() != null && !dto.getApiKey().isBlank()) {
+            agent.setApiKeyEncrypted(aesUtil.encrypt(dto.getApiKey()));
+        }
+
+        agent.setId(id);
+        agentMapper.updateById(agent);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        if (id == null) {
+            throw new BusinessException(400, "智能体ID不能为空");
+        }
+        int deleted = agentMapper.deleteById(id);
+        if (deleted == 0) {
+            throw new BusinessException(404, "智能体不存在");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void toggleEnabled(Long id) {
+        if (id == null) {
+            throw new BusinessException(400, "智能体ID不能为空");
+        }
+        Agent agent = agentMapper.selectById(id);
+        if (agent == null) {
+            throw new BusinessException(404, "智能体不存在");
+        }
+        agent.setIsEnabled(agent.getIsEnabled() != null && agent.getIsEnabled() == 1 ? 0 : 1);
+        agentMapper.updateById(agent);
+    }
+
+    // ─── Helpers ─────────────────────────────────────────────────
+
+    private AgentVO toVO(Agent agent) {
+        AgentVO vo = new AgentVO();
+        BeanUtils.copyProperties(agent, vo);
+        return vo;
+    }
+
+    private boolean isBlank(String str) {
+        return str == null || str.isBlank();
+    }
+}
