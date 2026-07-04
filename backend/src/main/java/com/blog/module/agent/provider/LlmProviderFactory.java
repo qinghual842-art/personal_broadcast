@@ -12,17 +12,20 @@ import java.util.stream.Collectors;
 public class LlmProviderFactory {
 
     private final Map<String, LlmProvider> providers;
+    private final GenericOpenAiProvider genericProvider;
 
-    public LlmProviderFactory(List<LlmProvider> providerList) {
+    public LlmProviderFactory(List<LlmProvider> providerList, GenericOpenAiProvider genericProvider) {
         this.providers = providerList.stream()
                 .collect(Collectors.toMap(LlmProvider::getName, Function.identity()));
+        this.genericProvider = genericProvider;
     }
 
     public LlmProvider getProvider(String name) {
         LlmProvider provider = providers.get(name);
-        if (provider == null) {
-            throw new BusinessException(400, "不支持的大模型提供商: " + name);
+        if (provider != null) {
+            return provider;
         }
-        return provider;
+        // Fallback: treat unknown provider as generic OpenAI-compatible
+        return genericProvider;
     }
 }

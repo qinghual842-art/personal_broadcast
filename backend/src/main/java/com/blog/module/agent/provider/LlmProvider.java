@@ -12,7 +12,8 @@ public interface LlmProvider {
             List<Message> messages,
             double temperature,
             int maxTokens,
-            String apiKey
+            String apiKey,
+            String baseUrl
     ) {}
 
     record Message(String role, String content) {}

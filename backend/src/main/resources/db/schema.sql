@@ -126,6 +126,7 @@ CREATE TABLE IF NOT EXISTS `agent` (
     `avatar` VARCHAR(500) DEFAULT '',
     `capability_desc` TEXT,
     `provider` VARCHAR(50) NOT NULL,
+    `base_url` VARCHAR(500) DEFAULT NULL COMMENT '自定义提供商的 API 地址',
     `api_key_encrypted` VARCHAR(500) NOT NULL,
     `model_name` VARCHAR(100) NOT NULL DEFAULT '',
     `temperature` DECIMAL(3,2) NOT NULL DEFAULT 0.70,
@@ -133,7 +134,7 @@ CREATE TABLE IF NOT EXISTS `agent` (
     `context_length` INT NOT NULL DEFAULT 10,
     `is_enabled` TINYINT NOT NULL DEFAULT 1,
     `rate_limit_per_min` INT NOT NULL DEFAULT 10,
-    `user_id` BIGINT UNSIGNED DEFAULT NULL COMMENT 'NULL=系统默认智能体，非NULL=用户创建的智能体',
+    `user_id` BIGINT UNSIGNED DEFAULT NULL COMMENT 'NULL=系统默认智能体，非 NULL=用户创建的智能体',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)

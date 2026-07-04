@@ -20,12 +20,12 @@ const form = ref({
 const saving = ref(false)
 
 const providers = [
-  { value: 'openai',   label: 'OpenAI (国外)' },
-  { value: 'deepseek', label: 'DeepSeek (国内)' },
-  { value: 'qwen',     label: '通义千问 (阿里)' },
-  { value: 'zhipu',    label: '智谱GLM (国内)' },
-  { value: 'moonshot', label: 'Kimi/Moonshot (国内)' },
-  { value: 'doubao',   label: '豆包 (字节跳动)' },
+  { value: 'openai',   label: 'OpenAI' },
+  { value: 'deepseek', label: 'DeepSeek' },
+  { value: 'qwen',     label: '通义千问' },
+  { value: 'zhipu',    label: '智谱GLM' },
+  { value: 'moonshot', label: 'Kimi/Moonshot' },
+  { value: 'doubao',   label: '豆包(字节跳动)' },
 ]
 
 const modelSuggestions = {
@@ -44,6 +44,10 @@ const personalityMap = [
 ]
 
 const currentSuggestions = computed(() => modelSuggestions[form.value.provider] || [])
+
+const isCustomProvider = computed(() => {
+  return form.value.provider && !providers.find(p => p.value === form.value.provider)
+})
 
 onMounted(async () => {
   if (!userStore.isLoggedIn) {
@@ -113,9 +117,12 @@ async function handleSave() {
         <el-input v-model="form.capabilityDesc" type="textarea" :rows="4" placeholder="系统提示词，描述智能体的能力和角色" />
       </el-form-item>
       <el-form-item label="大模型提供商">
-        <el-select v-model="form.provider" placeholder="请选择提供商">
+        <el-select v-model="form.provider" placeholder="请选择提供商或自定义" clearable filterable allow-create default-first-option>
           <el-option v-for="p in providers" :key="p.value" :label="p.label" :value="p.value" />
         </el-select>
+      </el-form-item>
+      <el-form-item label="API 地址" v-if="isCustomProvider">
+        <el-input v-model="form.baseUrl" placeholder="自定义提供商的 OpenAI 兼容 API 地址，如 https://api.example.com/v1" />
       </el-form-item>
       <el-form-item label="API密钥">
         <el-input v-model="form.apiKey" type="password" show-password :placeholder="isEdit ? '留空则不修改' : '输入你的API密钥'" />

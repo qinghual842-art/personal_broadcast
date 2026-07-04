@@ -119,7 +119,8 @@ public class AgentChatServiceImpl implements AgentChatService {
                 llmMessages,
                 agent.getTemperature() != null ? agent.getTemperature().doubleValue() : 0.7,
                 agent.getMaxTokens() != null ? agent.getMaxTokens() : 2048,
-                apiKey
+                apiKey,
+                agent.getBaseUrl()
         );
 
         String reply;

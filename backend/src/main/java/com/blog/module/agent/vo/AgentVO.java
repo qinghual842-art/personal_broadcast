@@ -13,6 +13,7 @@ public class AgentVO {
     private String avatar;
     private String capabilityDesc;
     private String provider;
+    private String baseUrl;
     private String modelName;
     private BigDecimal temperature;
     private Integer maxTokens;

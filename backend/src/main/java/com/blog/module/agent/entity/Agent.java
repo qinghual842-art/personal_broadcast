@@ -17,6 +17,7 @@ public class Agent {
     private Long userId;
     private String capabilityDesc;
     private String provider;
+    private String baseUrl;
     private String apiKeyEncrypted;
     private String modelName;
     private BigDecimal temperature;
