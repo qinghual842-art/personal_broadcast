@@ -252,7 +252,7 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
     }
   }
 
-  &.router-link-active {
+  &.router-link-exact-active {
     color: var(--color-amber-700);
     font-weight: 600;
     background: transparent;
