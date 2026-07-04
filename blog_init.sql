@@ -152,6 +152,7 @@ CREATE TABLE `agent` (
     `context_length`     INT          NOT NULL DEFAULT 10 COMMENT '上下文记忆轮数',
     `is_enabled`         TINYINT      NOT NULL DEFAULT 1 COMMENT '0=关闭, 1=启用',
     `rate_limit_per_min` INT          NOT NULL DEFAULT 10 COMMENT '每分钟每IP最大请求数',
+    `user_id`            BIGINT UNSIGNED DEFAULT NULL COMMENT 'NULL=系统默认智能体',
     `create_time`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_time`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
@@ -212,24 +213,16 @@ CREATE TABLE `article_like` (
 -- 默认数据
 -- =====================================================
 
+-- 管理员和测试用户账号由 Spring Boot 首次启动时通过 DataInitializer 自动创建
 -- 管理员: admin / admin123
--- 密码由 DataInitializer 在启动时用 Java 原生 BCryptPasswordEncoder 自动设置
-INSERT INTO `admin` (`username`, `password`, `nickname`, `email`) VALUES
-('admin', 'TO_BE_OVERWRITTEN_BY_DATAINITIALIZER', '博主', 'admin@blog.com');
-
--- 测试用户 (BCrypt $2a$)
--- tech_writer / test123
--- code_reader / demo123
-INSERT INTO `user` (`username`, `password`, `nickname`, `email`, `bio`) VALUES
-('tech_writer', '$2a$10$FehfdaeTLqRxeMrBo/zNqe3fWIqOuAo8R.EN0UONc/rOYHeyU2F72', '技术写手', 'tech@blog.com', '热爱分享编程经验的全栈开发者'),
-('code_reader', '$2a$10$uO9iWrbOHAJZXB6kBQCr/eo/9SL.FDZsFsep/jfLl4TV.RMkNh.Si', '代码读者', 'code@blog.com', '每天阅读技术文章的终身学习者');
+-- 测试用户: test001 / testpass001, test002 / testpass002
 
 -- 默认站点配置
 INSERT INTO `site_config` (`config_key`, `config_value`) VALUES
 ('site_name',    '我的个人博客'),
 ('site_desc',    '个人技术博客，记录学习与生活'),
 ('copyright',    '专门服务于自己'),
-('about_me',     '## 关于我\n\n一位热爱技术的开发者，在这里分享我的学习心得和技术文章。'),
+('about_me',     '## 博客声明\n\n此博客服务于每一个热爱交流的技术选手。'),
 ('social_links', '{"github":"https://github.com","email":"admin@blog.com"}'),
 ('keywords',     '技术博客,编程,AI'),
 ('site_logo',    ''),
