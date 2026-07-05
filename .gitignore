@@ -24,6 +24,8 @@ Thumbs.db
 
 # Uploads
 uploads/
+.uploads/
+
 
 # Frontend env files
 frontend/.env.*
