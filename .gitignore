@@ -26,9 +26,6 @@ Thumbs.db
 uploads/
 .uploads/
 
-# Tool configs
-.trae/
-.workbuddy/
 
 # Frontend env files
 frontend/.env.*
